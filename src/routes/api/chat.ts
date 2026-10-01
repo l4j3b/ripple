@@ -43,7 +43,14 @@ export const Route = createFileRoute("/api/chat")({
 							input: explainer,
 						});
 						try {
-							const videoUrl = await generateVideo(explainer);
+							const videoUrl = await generateVideo(explainer, (progress) => {
+								writer.write({
+									type: "tool-output-available",
+									toolCallId,
+									output: { progress },
+									preliminary: true,
+								});
+							});
 							writer.write({
 								type: "tool-output-available",
 								toolCallId,

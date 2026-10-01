@@ -51,13 +51,19 @@ function animateComposerMove(
 	const dy = first.top - last.top;
 	if (Math.hypot(dx, dy) < 2) return;
 
-	composer.animate(
+	const animation = composer.animate(
 		[
 			{ transform: `translate(${dx}px, ${dy}px)` },
 			{ transform: "translate(0px, 0px)" },
 		],
 		{ duration: 600, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
 	);
+	animation.finished
+		.then(() => {
+			composer.style.transform = "";
+			window.dispatchEvent(new Event("resize"));
+		})
+		.catch(() => {});
 }
 
 const EXAMPLES = [
@@ -334,9 +340,9 @@ function Home() {
 
 				<div
 					className={cn(
-						"absolute inset-0 flex items-center justify-center px-4 transition-all duration-500 ease-out",
+						"absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-500 ease-out",
 						hasStarted
-							? "pointer-events-none -translate-y-8 opacity-0"
+							? "pointer-events-none opacity-0"
 							: "opacity-100",
 					)}
 					inert={hasStarted}

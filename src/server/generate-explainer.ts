@@ -6,6 +6,7 @@ import {
 	explainerSchema,
 } from "#/lib/explainer";
 import { EXPLAINER_INSTRUCTIONS } from "#/lib/prompts";
+import { retrieveLinkedArticles } from "#/server/retrieve-url";
 
 const DEFAULT_MODEL = "anthropic/claude-sonnet-4.5";
 const MAX_ATTEMPTS = 2;
@@ -30,6 +31,20 @@ function toTranscript(messages: ExplainerUIMessage[]) {
 		.join("\n\n");
 }
 
+function latestUserText(messages: ExplainerUIMessage[]) {
+	let latest: ExplainerUIMessage | undefined;
+	for (let index = messages.length - 1; index >= 0; index--) {
+		if (messages[index]?.role === "user") {
+			latest = messages[index];
+			break;
+		}
+	}
+	if (!latest) return "";
+	return latest.parts
+		.map((part) => (part.type === "text" ? part.text : ""))
+		.join("");
+}
+
 function parseExplainer(output: string) {
 	const start = output.indexOf("{");
 	const end = output.lastIndexOf("}");
@@ -51,7 +66,15 @@ function parseExplainer(output: string) {
 export async function generateExplainer(
 	messages: ExplainerUIMessage[],
 ): Promise<Explainer> {
-	let prompt = `Conversation so far:\n\n${toTranscript(messages)}\n\nPlan the video for the latest user message.`;
+	const sources = await retrieveLinkedArticles(latestUserText(messages));
+	let prompt = [
+		"Conversation so far:",
+		toTranscript(messages),
+		sources ? `Source material for the latest message:\n\n${sources}` : "",
+		"Plan the video for the latest user message.",
+	]
+		.filter(Boolean)
+		.join("\n\n");
 	let lastError = "";
 
 	for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
