@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const MAX_SCENE_SECONDS = 15;
 export const MIN_SCENE_SECONDS = 5;
-export const MAX_SCENES = 18;
+export const TYPICAL_SCENE_SECONDS = [8, 12] as const;
+export const MAX_SCENES = 20;
 export const MAX_TOTAL_SECONDS = 180;
 
 export const WORDS_PER_SECOND = 2.3;
@@ -38,6 +39,7 @@ export const explainerSchema = z
 	.object({
 		analysis: z.string().optional(),
 		metaphor: z.string().optional(),
+		recurringElements: z.array(z.string()).optional(),
 		styleBible: z.string().min(1),
 		title: z.string().min(1),
 		takeaway: z.string().min(1),
@@ -65,6 +67,9 @@ export const explainerSchema = z
 	});
 
 export type Explainer = z.infer<typeof explainerSchema>;
+
+const NARRATOR_VOICE =
+	"Voice-over by a single off-screen narrator: a warm, clear adult male voice with a neutral American accent, confident and conversational, at a natural, lively pace. Nobody on screen speaks or moves their lips.";
 
 const CAPTION_STYLE =
 	"TikTok-style animated captions, timed to the voice: a single centered line near the bottom of the frame, bold uppercase sans-serif text with letters about 7% of the frame height, the same size and position for every caption. All caption text is pure white (#FFFFFF). The word being spoken is highlighted with a solid vivid purple (#8B5CF6) rounded box behind it while its text stays white. Each caption pops in as it is spoken and replaces the previous one.";
@@ -135,7 +140,7 @@ export function sceneVideoPrompt(explainer: Explainer, scene: Scene) {
 				.map((chunk) => `"${chunk}"`)
 				.join(", then ")}. Captions spelled correctly.`
 		: "";
-	return `${withStyle}${captions}`;
+	return `${withStyle}\n\n${NARRATOR_VOICE}${captions}`;
 }
 
 export function sceneNarration(videoPrompt: string) {
