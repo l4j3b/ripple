@@ -7,7 +7,7 @@ import {
 } from "#/lib/explainer";
 import { EXPLAINER_INSTRUCTIONS } from "#/lib/prompts";
 
-const DEFAULT_MODEL = "google/gemini-2.5-flash";
+const DEFAULT_MODEL = "anthropic/claude-sonnet-4.5";
 const MAX_ATTEMPTS = 2;
 
 function toTranscript(messages: ExplainerUIMessage[]) {
