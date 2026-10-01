@@ -3,7 +3,7 @@
 import type { UIMessage } from "ai";
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import type { ComponentProps } from "react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 import { Button } from "#/components/ui/button.tsx";
 import { cn } from "#/lib/utils.ts";
@@ -68,6 +68,21 @@ export const ConversationEmptyState = ({
 		)}
 	</div>
 );
+
+export function ConversationAutoscroll({ nonce }: { nonce: number }) {
+	const { scrollToBottom } = useStickToBottomContext();
+
+	useEffect(() => {
+		if (nonce === 0) return;
+		void scrollToBottom({
+			animation: "smooth",
+			ignoreEscapes: true,
+			duration: 800,
+		});
+	}, [nonce, scrollToBottom]);
+
+	return null;
+}
 
 export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
 

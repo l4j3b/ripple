@@ -7,14 +7,18 @@ export const TYPICAL_SCENE_SECONDS = [8, 12] as const;
 export const MAX_SCENES = 20;
 export const MAX_TOTAL_SECONDS = 180;
 
-export const WORDS_PER_SECOND = 2.3;
+export const WORDS_PER_SECOND = 3.2;
 
 export type VideoAspectRatio = "4:3" | "16:9";
 export const VIDEO_ASPECT_RATIO: VideoAspectRatio = "4:3";
 
+export const VIDEO_LOOKS = ["cinematic", "animated"] as const;
+export const SCENE_VISUALS = ["metaphor", "graphic"] as const;
+
 const sceneSchema = z
 	.object({
 		beat: z.string().optional(),
+		visual: z.enum(SCENE_VISUALS).catch("metaphor"),
 		durationSeconds: z.coerce.number(),
 		videoPrompt: z.string().min(1),
 	})
@@ -22,8 +26,8 @@ const sceneSchema = z
 		const words = sceneNarration(scene.videoPrompt)
 			.split(/\s+/)
 			.filter(Boolean).length;
-		const needed = Math.ceil(words / WORDS_PER_SECOND);
-		const seconds = Math.max(Math.round(scene.durationSeconds), needed);
+		// Clips longer than the narration make the narrator stretch the speech.
+		const seconds = Math.ceil(words / WORDS_PER_SECOND);
 		return {
 			...scene,
 			durationSeconds: Math.min(
@@ -40,6 +44,7 @@ export const explainerSchema = z
 		analysis: z.string().optional(),
 		metaphor: z.string().optional(),
 		recurringElements: z.array(z.string()).optional(),
+		look: z.enum(VIDEO_LOOKS).catch("cinematic"),
 		styleBible: z.string().min(1),
 		title: z.string().min(1),
 		takeaway: z.string().min(1),
@@ -68,8 +73,14 @@ export const explainerSchema = z
 
 export type Explainer = z.infer<typeof explainerSchema>;
 
+const ANIMATED_STYLE =
+	"Stylized 3D isometric animation: a miniature world on a floating tile, soft clay-like materials, rounded shapes, soft studio lighting, slow orbiting camera.";
+
+const GRAPHIC_STYLE =
+	"Clean flat 2D motion graphic in a modern explainer style, on a dark navy background (#0B1220) with a faint grid. Teal (#2DD4BF) and purple (#8B5CF6) accents, green for up and red for down, bold white uppercase sans-serif labels. Smooth eased animation. The bottom quarter of the frame stays empty.";
+
 const NARRATOR_VOICE =
-	"Voice-over by a single off-screen narrator: a warm, clear adult male voice with a neutral American accent, confident and conversational, at a natural, lively pace. Nobody on screen speaks or moves their lips.";
+	"Voice-over by a single off-screen narrator: the same man in every clip, in his forties, with a warm, smooth baritone voice, a neutral General American accent, and crisp diction. Steady pitch and even volume, studio-quality close-mic recording with no reverb or background music. Confident and conversational, speaking quickly at a fast energetic pace, with no pauses between phrases. Nobody on screen speaks or moves their lips.";
 
 const CAPTION_STYLE =
 	"TikTok-style animated captions, timed to the voice: a single centered line near the bottom of the frame, bold uppercase sans-serif text with letters about 7% of the frame height, the same size and position for every caption. All caption text is pure white (#FFFFFF). The word being spoken is highlighted with a solid vivid purple (#8B5CF6) rounded box behind it while its text stays white. Each caption pops in as it is spoken and replaces the previous one.";
@@ -127,11 +138,20 @@ function narrationQuote(videoPrompt: string) {
 	return videoPrompt.match(/says,?\s*[“"]([^”"]+)[”"]/i)?.[1];
 }
 
+function sceneStyle(explainer: Explainer, scene: Scene) {
+	if (scene.visual === "graphic") return GRAPHIC_STYLE;
+	if (explainer.look === "animated") {
+		return `${ANIMATED_STYLE} ${explainer.styleBible}`;
+	}
+	return explainer.styleBible;
+}
+
 export function sceneVideoPrompt(explainer: Explainer, scene: Scene) {
 	const prompt = scene.videoPrompt.trim();
+	const style = sceneStyle(explainer, scene);
 	const withStyle = prompt.startsWith(explainer.styleBible)
 		? prompt
-		: `${explainer.styleBible}\n\n${prompt}`;
+		: `${style}\n\n${prompt}`;
 	const narration = narrationQuote(prompt);
 	const captions = narration
 		? `\n\n${CAPTION_STYLE} The captions appear in this exact order: ${captionChunks(

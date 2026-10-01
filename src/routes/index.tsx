@@ -7,6 +7,7 @@ import { flushSync } from "react-dom";
 
 import {
 	Conversation,
+	ConversationAutoscroll,
 	ConversationContent,
 	ConversationScrollButton,
 } from "#/components/ai-elements/conversation";
@@ -95,6 +96,7 @@ function Home() {
 	const [chatId, setChatId] = useState("ripple");
 	const [chatOpen, setChatOpen] = useState(false);
 	const [pendingText, setPendingText] = useState<string | null>(null);
+	const [scrollNonce, setScrollNonce] = useState(0);
 	const {
 		messages,
 		sendMessage,
@@ -155,6 +157,7 @@ function Home() {
 			);
 		}
 		sendMessage({ text: trimmed });
+		if (hasStarted) setScrollNonce((nonce) => nonce + 1);
 	};
 
 	const openExample = (example: LandingExample) => {
@@ -253,6 +256,7 @@ function Home() {
 					inert={!hasStarted}
 				>
 					<Conversation>
+						<ConversationAutoscroll nonce={scrollNonce} />
 						<ConversationContent className="mx-auto w-full max-w-3xl pb-8">
 							{pendingText &&
 								!messages.some((message) => message.role === "user") && (

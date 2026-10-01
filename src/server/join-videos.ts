@@ -10,7 +10,9 @@ import ffmpegPath from "ffmpeg-static";
 const run = promisify(execFile);
 
 async function download(url: string, path: string) {
-	const response = await fetch(url);
+	const response = await fetch(url, {
+		headers: { "User-Agent": "Mozilla/5.0" },
+	});
 	if (!response.ok) {
 		throw new Error(`Could not download a scene (HTTP ${response.status}).`);
 	}

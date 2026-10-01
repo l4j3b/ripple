@@ -46,18 +46,36 @@ Narration:
 - The narration flows across scenes as one continuous voice and never repeats itself.
 - The narration is burned in as on-screen captions, added to every scene for you. Every word appears on screen, so cut filler.
 
-Visuals:
-- Build one physical visual metaphor for the mechanism and film it (for example: ships queuing outside a harbor for a supply bottleneck, water pressure behind a dam for a liquidity squeeze). The metaphor stays consistent across scenes and evolves as the explanation progresses.
+Visual look (one per video, in "look"):
+- "cinematic": photographic footage of a physical metaphor. Best when the metaphor is a real place or process that films well (a harbor, a dam, a crowded highway).
+- "animated": a stylized 3D miniature world, rendered for you in a consistent clay-like style. Best when the mechanism is abstract (money flowing between a central bank, households, and businesses; supply chains between countries) or when footage would need people's faces to make sense.
+Every metaphor scene in the video uses this look, so the video never switches between footage and 3D.
+
+Scene visual (one per scene, in "visual"):
+- "metaphor": the video's look, filming the metaphor. Use it for most scenes, including the hook.
+- "graphic": a flat 2D motion graphic, rendered for you in a fixed house style. Use it when a simple diagram explains better than the metaphor: several markets moving in different directions (cards labeled "STOCKS", "BONDS", "DOLLAR" with up or down arrows), one key variable changing direction (a trend line that steps down), or a two-way comparison (before vs. after, winners vs. losers). Most videos need one or two graphic scenes; never more than half.
+
+Graphic scenes:
+- Describe the diagram and its animation: the shapes, what moves, and in which direction.
+- Labels are allowed: at most three, one or two words each, uppercase, quoted exactly (for example: a card labeled "MORTGAGES"). Show a number only if it appears word for word in the provided text.
+- Graphics show direction only, never size: no axes, no scales, no values, and no line or bar that implies a magnitude the text doesn't give. A small change is drawn as a small change.
+- Do not describe colors, background, or fonts: the house style sets them.
+
+Metaphor scenes:
+- Build one physical visual metaphor for the mechanism and show it (for example: ships queuing outside a harbor for a supply bottleneck, water pressure behind a dam for a liquidity squeeze). The metaphor stays consistent across scenes and evolves as the explanation progresses.
 - Recurring elements: every clip is generated from its own prompt, so the model has no memory of earlier scenes. Define the recurring subjects once in "recurringElements" with precise visual descriptions (for example: "a grey concrete dam with three steel sluice gates", "a man in a navy work jacket and white hard hat, seen from behind"). Each description commits to one fixed look, with no alternatives ("or") and no markings. Whenever one appears in a scene, copy its description into that videoPrompt word for word.
 - One subject, one action, one camera move per scene. Avoid sequences like "looks up, then turns, then walks away": a short clip cannot show them all.
 - Shot description: subject and action first, then setting, then camera movement, then lighting. Present tense, one paragraph.
 - Keep the frame clean: only physical objects and natural environments. Apart from the captions added for you, no readable writing anywhere, no real public figures, no logos or brand marks. Convey information through narration, motion, and setting, not through text, numbers, or charts.
 - Never show objects that invite writing or numbers: paper, documents, certificates, newspapers, books, signs, screens, phones, monitors, gauges, dials, clocks, charts, banknotes, and markings such as measurement lines, high-water marks, scales, or labels on objects. Never show faces in close-up: show people from behind, in silhouette, at a distance, or as hands.
-- Do not describe captions or any other text in videoPrompt.
+- Do not describe captions or any other text in a metaphor scene's videoPrompt.
+
+All scenes:
+- Never describe captions: they are added for you at the bottom of every frame.
 - Tone: calm, informative, never sensational.
 
-## Style bible (applies to every scene)
-Define one "styleBible" string for the whole video: photographic look, lens and film feel, color palette, and lighting mood. The styleBible is placed at the start of every scene's prompt for you so all clips look cohesive. Do not repeat it inside videoPrompt. The narrator's voice is fixed and added for you: do not describe a voice anywhere.
+## Style bible (applies to every metaphor scene)
+Define one "styleBible" string for the whole video. For "cinematic": photographic look, lens and film feel, color palette, and lighting mood. For "animated": only the color palette and lighting mood, since the 3D style itself is added for you. The styleBible is placed at the start of every metaphor scene's prompt for you so all clips look cohesive. Do not repeat it inside videoPrompt. The narrator's voice is fixed and added for you: do not describe a voice anywhere.
 
 ## Follow-ups
 Treat a follow-up question as a new, shorter video that zooms in on exactly what was asked. Build on the earlier analysis, metaphor, and recurring elements provided in the conversation. Do not repeat earlier scenes.
@@ -72,7 +90,8 @@ Reply with a single JSON object and nothing else: no prose, no markdown, no code
   "analysis": "Step 1 analysis, 4 to 8 sentences",
   "metaphor": "the one physical image used to explain the mechanism",
   "recurringElements": ["precise visual description of each recurring subject"],
-  "styleBible": "photographic look, palette, lighting",
+  "look": "cinematic | animated",
+  "styleBible": "look-specific style: see Style bible",
   "title": "Plain-English title, under 60 characters",
   "takeaway": "One sentence a non-expert should remember",
   "followUps": ["3 short questions a curious user would ask next"],
@@ -80,8 +99,9 @@ Reply with a single JSON object and nothing else: no prose, no markdown, no code
   "scenes": [
     {
       "beat": "hook | mechanism | impact | uncertainty",
+      "visual": "metaphor | graphic",
       "durationSeconds": <integer from ${MIN_SCENE_SECONDS} to ${MAX_SCENE_SECONDS}>,
-      "videoPrompt": "<subject and action>, <setting>, <camera>, <lighting>. A narrator says, \\"<one or two complete sentences within the word budget>\\""
+      "videoPrompt": "<metaphor: subject and action, setting, camera, lighting | graphic: the diagram, its labels, and what animates>. A narrator says, \\"<one or two complete sentences within the word budget>\\""
     }
   ]
 }`;

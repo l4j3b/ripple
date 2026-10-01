@@ -8,24 +8,27 @@ import {
 	type VideoAspectRatio,
 } from "#/lib/explainer";
 import { joinVideos } from "#/server/join-videos";
+import { narratorVoiceUrl } from "#/server/narrator-voice";
 
-const VIDEO_MODEL = "minimax/h3-max/text-to-video";
+const VIDEO_MODEL = "minimax/h3-max/reference-to-video";
 const VIDEO_RESOLUTION = "480P";
+const VIDEO_SEED = 424242;
 
 type H3MaxVideoInput = {
 	prompt: string;
 	duration: number;
 	resolution: "480P" | "768P" | "1080P";
 	aspect_ratio: VideoAspectRatio;
+	seed: number;
 	prompt_expansion_mode: "disabled";
+	reference_audio_urls: string[];
 };
 
 type VideoOutput = {
 	video?: { url?: string };
 };
 
-// Native audio is always part of the mp4. Spoken narration goes in the prompt;
-// there is no audio flag. target_audio_url only pins an external clip.
+// The prompt refers to the narrator reference clip as "Audio 1".
 const subscribeH3Max = (input: H3MaxVideoInput) =>
 	fal.subscribe(VIDEO_MODEL, { input });
 
@@ -35,7 +38,9 @@ async function generateScene(prompt: string, duration: number) {
 		duration,
 		resolution: VIDEO_RESOLUTION,
 		aspect_ratio: VIDEO_ASPECT_RATIO,
+		seed: VIDEO_SEED,
 		prompt_expansion_mode: "disabled",
+		reference_audio_urls: [await narratorVoiceUrl()],
 	});
 	const url = (data as VideoOutput).video?.url;
 	if (!url) {

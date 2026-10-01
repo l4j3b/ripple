@@ -120,8 +120,8 @@ export function ExplainerVideoCard({
 	}
 
 	return (
-		<div className="w-full min-w-0 max-w-xl">
-			<div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+		<div className="flex w-full min-w-0 max-w-xl flex-col">
+			<div className="flex-1 overflow-hidden rounded-2xl border bg-card shadow-sm">
 				<div
 					className={cn(
 						"relative overflow-hidden bg-slate-900",

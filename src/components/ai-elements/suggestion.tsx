@@ -43,6 +43,7 @@ export const Suggestion = ({
 		<Button
 			className={cn("cursor-pointer rounded-full px-4", className)}
 			onClick={handleClick}
+			onMouseDown={(event) => event.preventDefault()}
 			size={size}
 			type="button"
 			variant={variant}
