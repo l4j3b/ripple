@@ -65,6 +65,7 @@ export function ExplainerVideoCard({
 			: undefined;
 	const [readyUrl, setReadyUrl] = useState<string | null>(null);
 	const videoRef = useRef<HTMLVideoElement>(null);
+	const playWhenReady = useRef(false);
 	const videoReady = videoUrl != null && readyUrl === videoUrl;
 
 	useEffect(() => {
@@ -75,6 +76,38 @@ export function ExplainerVideoCard({
 		video.addEventListener("loadeddata", markReady);
 		return () => video.removeEventListener("loadeddata", markReady);
 	}, [videoUrl]);
+
+	useEffect(() => {
+		if (!videoUrl) playWhenReady.current = true;
+	}, [videoUrl]);
+
+	useEffect(() => {
+		if (!videoReady || !playWhenReady.current) return;
+		const video = videoRef.current;
+		if (!video) return;
+		let cancelled = false;
+		const start = async () => {
+			try {
+				video.muted = false;
+				await video.play();
+			} catch {
+				if (cancelled) return;
+				// A finished generation is no longer inside the click that started it,
+				// so some browsers only allow the clip to start muted.
+				video.muted = true;
+				try {
+					await video.play();
+				} catch {
+					// The controls stay available if playback is blocked entirely.
+				}
+			}
+			if (!cancelled) playWhenReady.current = false;
+		};
+		void start();
+		return () => {
+			cancelled = true;
+		};
+	}, [videoReady]);
 
 	if (invocation.state === "output-error") {
 		return (

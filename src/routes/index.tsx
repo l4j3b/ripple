@@ -222,7 +222,7 @@ function Home() {
 			</PromptInputBody>
 			<InputGroupAddon
 				align="inline-end"
-				className="py-2 pr-1 has-[>button]:mr-0"
+				className="py-2 pr-2.5 has-[>button]:mr-0"
 			>
 				<PromptInputSubmit
 					className="size-9 cursor-pointer rounded-full border-0 bg-[#14161a] p-0 text-neutral-400 shadow-none hover:bg-[#22252a] hover:text-neutral-300 focus-visible:border-transparent focus-visible:ring-0"
@@ -409,7 +409,7 @@ function Home() {
 									);
 								}
 								return (
-									<Tooltip key={example.label}>
+									<Tooltip delayDuration={600} key={example.label}>
 										<TooltipTrigger asChild>
 											<Suggestion
 												className="font-normal text-muted-foreground"
@@ -422,7 +422,7 @@ function Home() {
 										</TooltipTrigger>
 										<TooltipContent
 											className="max-w-[min(40rem,calc(100vw-2rem))] whitespace-nowrap text-left font-normal"
-											side="top"
+											side="bottom"
 											sideOffset={6}
 										>
 											{link}

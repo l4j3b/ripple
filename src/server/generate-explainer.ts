@@ -73,6 +73,7 @@ export async function generateExplainer(
 	const sources = await retrieveLinkedArticles(latest);
 	onStatus?.("writing");
 	let prompt = [
+		`Today's date: ${new Date().toISOString().slice(0, 10)}.`,
 		"Conversation so far:",
 		toTranscript(messages),
 		sources ? `Source material for the latest message:\n\n${sources}` : "",

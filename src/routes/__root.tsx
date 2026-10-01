@@ -43,7 +43,10 @@ function NotFound() {
 	return (
 		<main className="flex h-dvh flex-col items-center justify-center gap-3 px-6 text-center">
 			<p className="text-lg">This page doesn't exist.</p>
-			<a className="text-sm text-muted-foreground underline underline-offset-4" href="/">
+			<a
+				className="text-sm text-muted-foreground underline underline-offset-4"
+				href="/"
+			>
 				Back to Ripple
 			</a>
 		</main>
