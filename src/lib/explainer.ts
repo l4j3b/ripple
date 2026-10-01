@@ -90,7 +90,7 @@ const sceneSchema = z
 		visual: z.enum(SCENE_VISUALS).catch("metaphor"),
 		durationSeconds: z.coerce.number(),
 		videoPrompt: z.string().min(1),
-		diagram: diagramSchema.optional(),
+		diagram: diagramSchema.nullish(),
 	})
 	.superRefine((scene, ctx) => {
 		const narration = sceneNarration(scene.videoPrompt);

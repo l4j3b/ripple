@@ -435,7 +435,7 @@ function Home() {
 							<h2 className="text-center font-semibold text-2xl tracking-tight">
 								Recent Ripples
 							</h2>
-							<div className="grid grid-cols-2 gap-x-6 gap-y-8">
+							<div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
 								{LANDING_EXAMPLES.map((example) => (
 									<ExampleCard
 										active={!hasStarted}

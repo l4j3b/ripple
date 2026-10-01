@@ -5,6 +5,7 @@ import {
 	type ExplainerPrepStage,
 	type ExplainerUIMessage,
 	explainerSchema,
+	sceneNarration,
 } from "#/lib/explainer";
 import { EXPLAINER_INSTRUCTIONS } from "#/lib/prompts";
 import { retrieveLinkedArticles } from "#/server/retrieve-url";
@@ -97,6 +98,7 @@ export async function generateExplainer(
 
 		const parsed = parseExplainer(data.output);
 		if (parsed.success) {
+			logScript(parsed.data);
 			return parsed.data;
 		}
 		lastError = parsed.error;
@@ -104,4 +106,22 @@ export async function generateExplainer(
 	}
 
 	throw new Error(`The model returned an unusable reply: ${lastError}`);
+}
+
+function logScript(explainer: Explainer) {
+	console.log(
+		`script: ${explainer.title} | ${explainer.look} | ${explainer.totalSeconds}s, ${explainer.scenes.length} scenes`,
+	);
+	console.log("style:", explainer.styleBible);
+	if (explainer.recurringElements?.length) {
+		console.log("recurring:", explainer.recurringElements);
+	}
+	for (const [index, scene] of explainer.scenes.entries()) {
+		const narration = sceneNarration(scene.videoPrompt);
+		const words = narration.split(/\s+/).filter(Boolean).length;
+		console.log(
+			`[${index + 1} ${scene.beat ?? "scene"} · ${scene.visual} · ${scene.durationSeconds}s, ${words} words]\n${scene.videoPrompt}`,
+		);
+		if (scene.diagram) console.log("diagram:", scene.diagram);
+	}
 }

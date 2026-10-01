@@ -58,12 +58,14 @@ export async function generateVideo(
 	onProgress?.({ stage: "scenes", scenesDone, scenesTotal });
 
 	const sceneUrls = await Promise.all(
-		explainer.scenes.map(async (scene) => {
-			const url = await generateScene(
-				sceneVideoPrompt(explainer, scene),
-				scene.durationSeconds,
+		explainer.scenes.map(async (scene, index) => {
+			const prompt = sceneVideoPrompt(explainer, scene);
+			console.log(
+				`scene ${index + 1}/${scenesTotal} (${scene.durationSeconds}s):\n${prompt}`,
 			);
+			const url = await generateScene(prompt, scene.durationSeconds);
 			scenesDone += 1;
+			console.log(`scene ${index + 1} ready: ${url}`);
 			onProgress?.({ stage: "scenes", scenesDone, scenesTotal });
 			return url;
 		}),
@@ -72,5 +74,7 @@ export async function generateVideo(
 	if (sceneUrls.length === 1) return sceneUrls[0];
 
 	onProgress?.({ stage: "stitching", scenesDone, scenesTotal });
-	return joinVideos(sceneUrls);
+	const url = await joinVideos(sceneUrls);
+	console.log("joined:", url);
+	return url;
 }
