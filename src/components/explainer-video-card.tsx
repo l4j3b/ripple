@@ -2,6 +2,7 @@ import { ChevronDownIcon, PlayIcon } from "lucide-react";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 
 import { Shimmer } from "#/components/ai-elements/shimmer";
+import { Suggestion } from "#/components/ai-elements/suggestion";
 import { Spinner } from "#/components/ui/spinner";
 import { type ExplainerVideoInvocation, sceneNarration } from "#/lib/explainer";
 import { cn } from "#/lib/utils";
@@ -27,15 +28,39 @@ function statusText(invocation: ExplainerVideoInvocation) {
 
 export function ExplainerVideoCard({
 	invocation,
+	onFollowUp,
+	readingLink = false,
+	aspect = "video",
+	controls = "native",
 }: {
 	invocation: ExplainerVideoInvocation;
+	onFollowUp?: (question: string) => void;
+	readingLink?: boolean;
+	aspect?: "video" | "4/3";
+	controls?: "native" | "play";
 }) {
 	const videoUrl =
 		invocation.state === "output-available"
 			? invocation.output.videoUrl
 			: undefined;
 	const [readyUrl, setReadyUrl] = useState<string | null>(null);
+	const [playing, setPlaying] = useState(false);
+	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoReady = videoUrl != null && readyUrl === videoUrl;
+
+	const togglePlayback = () => {
+		const video = videoRef.current;
+		if (!video) return;
+		if (video.paused) {
+			void video.play().then(
+				() => setPlaying(true),
+				() => setPlaying(false),
+			);
+			return;
+		}
+		video.pause();
+		setPlaying(false);
+	};
 
 	if (invocation.state === "output-error") {
 		return (
@@ -47,6 +72,9 @@ export function ExplainerVideoCard({
 
 	const input = invocation.input;
 	const status = statusText(invocation);
+	const followUps = (input?.followUps ?? []).filter(
+		(question): question is string => Boolean(question),
+	);
 
 	const scriptLines: { start: number; narration: string }[] = [];
 	let elapsed = 0;
@@ -60,99 +88,136 @@ export function ExplainerVideoCard({
 	}
 
 	return (
-		<div className="w-full min-w-0 max-w-xl overflow-hidden rounded-2xl border bg-card shadow-sm">
-			<div className="relative aspect-video overflow-hidden bg-slate-900">
-				{videoUrl && (
-					<video
-						className={cn(
-							"absolute inset-0 size-full object-cover",
-							videoReady ? "opacity-100" : "pointer-events-none opacity-0",
-						)}
-						controls
-						height={9}
-						onError={() => setReadyUrl(videoUrl)}
-						onLoadedData={() => setReadyUrl(videoUrl)}
-						playsInline
-						preload="auto"
-						ref={(node) => {
-							if (node && node.readyState >= 2) setReadyUrl(videoUrl);
-						}}
-						src={videoUrl}
-						width={16}
-					>
-						<track kind="captions" label="English" srcLang="en" />
-					</video>
-				)}
-				{!videoReady && (
-					<div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900">
-						<div className="pointer-events-none absolute inset-0 animate-[sweep_2.8s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-
-						<div className="relative flex size-14 items-center justify-center">
-							{RIPPLE_DELAYS.map((delay) => (
-								<span
-									className="absolute inset-0 animate-[ripple-out_2.4s_ease-out_infinite] rounded-full border border-teal-300/50"
-									key={delay}
-									style={{ animationDelay: delay }}
-								/>
-							))}
-							<div className="relative flex size-14 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur">
+		<div className="w-full min-w-0 max-w-xl">
+			<div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+				<div
+					className={cn(
+						"relative overflow-hidden bg-slate-900",
+						aspect === "4/3" ? "aspect-[4/3]" : "aspect-video",
+					)}
+				>
+					{videoUrl && (
+						<video
+							className={cn(
+								"absolute inset-0 size-full object-cover",
+								videoReady ? "opacity-100" : "pointer-events-none opacity-0",
+							)}
+							controls={controls === "native"}
+							height={aspect === "4/3" ? 3 : 9}
+							onClick={
+								controls === "play" && playing ? togglePlayback : undefined
+							}
+							onEnded={() => setPlaying(false)}
+							onError={() => setReadyUrl(videoUrl)}
+							onLoadedData={() => setReadyUrl(videoUrl)}
+							onPause={() => setPlaying(false)}
+							playsInline
+							preload="auto"
+							ref={(node) => {
+								videoRef.current = node;
+								if (node && node.readyState >= 2) setReadyUrl(videoUrl);
+							}}
+							src={videoUrl}
+							width={aspect === "4/3" ? 4 : 16}
+						>
+							<track kind="captions" label="English" srcLang="en" />
+						</video>
+					)}
+					{controls === "play" && videoReady && !playing && (
+						<button
+							aria-label="Play video"
+							className="absolute inset-0 flex cursor-pointer items-center justify-center"
+							onClick={togglePlayback}
+							type="button"
+						>
+							<span className="flex size-14 items-center justify-center rounded-full bg-black/45 ring-1 ring-white/30 backdrop-blur">
 								<PlayIcon className="size-6 translate-x-0.5 fill-white text-white" />
+							</span>
+						</button>
+					)}
+					{!videoReady && (
+						<div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900">
+							<div className="pointer-events-none absolute inset-0 animate-[sweep_2.8s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
+
+							<div className="relative flex size-14 items-center justify-center">
+								{RIPPLE_DELAYS.map((delay) => (
+									<span
+										className="absolute inset-0 animate-[ripple-out_2.4s_ease-out_infinite] rounded-full border border-teal-300/50"
+										key={delay}
+										style={{ animationDelay: delay }}
+									/>
+								))}
+								<div className="relative flex size-14 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur">
+									<PlayIcon className="size-6 translate-x-0.5 fill-white text-white" />
+								</div>
+							</div>
+
+							<span className="absolute bottom-4 left-3 flex items-center gap-2 rounded-full bg-black/40 px-2.5 py-1 font-medium text-white/80 text-xs">
+								<Spinner className="size-3" />
+								{status}
+							</span>
+
+							<div className="absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-white/10">
+								<div className="h-full w-2/5 animate-[progress-indeterminate_1.6s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-emerald-400 to-teal-400" />
 							</div>
 						</div>
-
-						<span className="absolute bottom-4 left-3 flex items-center gap-2 rounded-full bg-black/40 px-2.5 py-1 font-medium text-white/80 text-xs">
-							<Spinner className="size-3" />
-							{status}
+					)}
+					{input?.totalSeconds && (
+						<span className="pointer-events-none absolute top-3 right-3 rounded-full bg-black/40 px-2 py-1 font-medium text-white/80 text-xs tabular-nums">
+							{formatDuration(input.totalSeconds)}
 						</span>
-
-						<div className="absolute inset-x-0 bottom-0 h-1 overflow-hidden bg-white/10">
-							<div className="h-full w-2/5 animate-[progress-indeterminate_1.6s_ease-in-out_infinite] rounded-full bg-gradient-to-r from-emerald-400 to-teal-400" />
-						</div>
-					</div>
-				)}
-				{input?.totalSeconds && (
-					<span className="pointer-events-none absolute top-3 right-3 rounded-full bg-black/40 px-2 py-1 font-medium text-white/80 text-xs tabular-nums">
-						{formatDuration(input.totalSeconds)}
-					</span>
-				)}
-			</div>
-
-			<AnimatedHeight>
-				<div className="space-y-2 p-4">
-					{input?.title ? (
-						<h3 className="font-semibold text-base leading-snug">
-							{input.title}
-						</h3>
-					) : (
-						<Shimmer className="font-semibold text-base">
-							Reading the story…
-						</Shimmer>
-					)}
-					{input?.takeaway && (
-						<p className="text-muted-foreground text-sm leading-relaxed">
-							{input.takeaway}
-						</p>
-					)}
-					{scriptLines.length > 0 && (
-						<details className="group pt-1">
-							<summary className="flex cursor-pointer list-none items-center gap-1 font-medium text-muted-foreground text-xs hover:text-foreground">
-								Script
-								<ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
-							</summary>
-							<ol className="mt-2 space-y-2 rounded-lg bg-muted p-3 text-muted-foreground text-xs leading-relaxed">
-								{scriptLines.map((line) => (
-									<li className="flex gap-3" key={line.start}>
-										<span className="shrink-0 tabular-nums opacity-60">
-											{formatDuration(line.start)}
-										</span>
-										<span>{line.narration}</span>
-									</li>
-								))}
-							</ol>
-						</details>
 					)}
 				</div>
-			</AnimatedHeight>
+
+				<AnimatedHeight>
+					<div className="space-y-2 p-4">
+						{input?.title ? (
+							<h3 className="font-semibold text-base leading-snug">
+								{input.title}
+							</h3>
+						) : (
+							<Shimmer className="font-semibold text-base">
+								{readingLink ? "Reading the story…" : "Thinking it through…"}
+							</Shimmer>
+						)}
+						{input?.takeaway && (
+							<p className="text-muted-foreground text-sm leading-relaxed">
+								{input.takeaway}
+							</p>
+						)}
+						{scriptLines.length > 0 && (
+							<details className="group pt-1">
+								<summary className="flex cursor-pointer list-none items-center gap-1 font-medium text-muted-foreground text-xs hover:text-foreground">
+									Script
+									<ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
+								</summary>
+								<ol className="mt-2 space-y-2 rounded-lg bg-muted p-3 text-muted-foreground text-xs leading-relaxed">
+									{scriptLines.map((line) => (
+										<li className="flex gap-3" key={line.start}>
+											<span className="shrink-0 tabular-nums opacity-60">
+												{formatDuration(line.start)}
+											</span>
+											<span>{line.narration}</span>
+										</li>
+									))}
+								</ol>
+							</details>
+						)}
+					</div>
+				</AnimatedHeight>
+			</div>
+			{onFollowUp && videoUrl && followUps.length > 0 && (
+				<div className="flex flex-wrap gap-2 pt-3">
+					{followUps.map((question) => (
+						<Suggestion
+							className="h-auto whitespace-normal px-3 py-1.5 text-left font-normal text-muted-foreground"
+							key={question}
+							onClick={onFollowUp}
+							suggestion={question}
+						/>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

@@ -34,6 +34,7 @@ type Article = {
 	siteName?: string;
 	published?: string;
 	text: string;
+	paywalled?: boolean;
 };
 
 function cleanUrl(raw: string) {
@@ -142,17 +143,23 @@ async function fetchHtml(start: string) {
 			current = new URL(location, current).href;
 			continue;
 		}
-		if (!response.ok) {
+		const blocked =
+			response.status === 401 ||
+			response.status === 402 ||
+			response.status === 403;
+		if (!response.ok && !blocked) {
 			await response.body?.cancel();
 			throw new Error(`The site responded with ${response.status}.`);
 		}
 		const type = response.headers.get("content-type") ?? "";
 		if (type && !/text\/html|application\/xhtml\+xml/i.test(type)) {
 			await response.body?.cancel();
+			if (blocked)
+				return { finalUrl: current, html: "", status: response.status };
 			throw new Error("The link is not an HTML page.");
 		}
 		const html = await readLimited(response);
-		return { finalUrl: current, html };
+		return { finalUrl: current, html, status: response.status };
 	}
 	throw new Error("The link redirected too many times.");
 }
@@ -208,6 +215,148 @@ function readableText(document: Document) {
 	};
 }
 
+function metaContent(document: Document, key: string) {
+	const node = document.querySelector(
+		`meta[property="${key}"], meta[name="${key}"]`,
+	);
+	return (
+		node?.getAttribute("content")?.replace(/\s+/g, " ").trim() || undefined
+	);
+}
+
+function pageFacts(document: Document) {
+	let headline: string | undefined;
+	let description: string | undefined;
+	let published: string | undefined;
+	let siteName = metaContent(document, "og:site_name");
+	let paywalled = false;
+
+	for (const script of document.querySelectorAll(
+		'script[type="application/ld+json"]',
+	)) {
+		let data: unknown;
+		try {
+			data = JSON.parse(script.textContent ?? "");
+		} catch {
+			continue;
+		}
+		const stack = [data];
+		while (stack.length > 0) {
+			const node = stack.pop();
+			if (!node || typeof node !== "object") continue;
+			if (Array.isArray(node)) {
+				stack.push(...node);
+				continue;
+			}
+			const record = node as Record<string, unknown>;
+			if (record["@graph"]) stack.push(record["@graph"]);
+			if (record.isAccessibleForFree === false) paywalled = true;
+			if (!headline && typeof record.headline === "string") {
+				headline = record.headline.replace(/\s+/g, " ").trim();
+			}
+			if (!description && typeof record.description === "string") {
+				description = record.description.replace(/\s+/g, " ").trim();
+			}
+			if (!published && typeof record.datePublished === "string") {
+				published = record.datePublished;
+			}
+			const publisher = record.publisher;
+			if (
+				!siteName &&
+				publisher &&
+				typeof publisher === "object" &&
+				"name" in publisher &&
+				typeof publisher.name === "string"
+			) {
+				siteName = publisher.name.trim();
+			}
+		}
+	}
+
+	const h1 = document
+		.querySelector("h1")
+		?.textContent?.replace(/\s+/g, " ")
+		.trim();
+	headline =
+		metaContent(document, "og:title") ||
+		metaContent(document, "twitter:title") ||
+		headline ||
+		h1 ||
+		document.title.replace(/\s+/g, " ").trim() ||
+		undefined;
+	description =
+		metaContent(document, "og:description") ||
+		metaContent(document, "description") ||
+		description;
+
+	return { headline, description, published, siteName, paywalled };
+}
+
+function stripSiteSuffix(title: string, siteName?: string) {
+	if (!siteName) return title;
+	const escaped = siteName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	return title
+		.replace(new RegExp(`\\s*[|\\-–—]\\s*${escaped}\\s*$`, "i"), "")
+		.trim();
+}
+
+function usefulHeadline(
+	title: string | undefined,
+	pageUrl: string,
+	siteName?: string,
+) {
+	if (!title) return;
+	const cleaned = stripSiteSuffix(title.replace(/\s+/g, " ").trim(), siteName);
+	if (cleaned.length < 12) return;
+	if (
+		/^(just a moment|access denied|attention required|please enable|subscribe|sign in|log in)/i.test(
+			cleaned,
+		)
+	) {
+		return;
+	}
+	try {
+		const host = new URL(pageUrl).hostname.replace(/^www\./, "");
+		const lower = cleaned.toLowerCase();
+		if (lower === host || lower === host.split(".")[0]) return;
+	} catch {
+		return cleaned;
+	}
+	return cleaned;
+}
+
+function headlineFromUrl(raw: string) {
+	let url: URL;
+	try {
+		url = new URL(raw);
+	} catch {
+		return;
+	}
+	const slug = url.pathname
+		.split("/")
+		.filter(Boolean)
+		.reverse()
+		.find((part) => part.includes("-") && part.length > 12);
+	if (!slug) return;
+	const words = decodeURIComponent(slug)
+		.replace(/\.[a-z0-9]+$/i, "")
+		.replace(/[-_]+/g, " ")
+		.replace(/\s+[a-f0-9]{6,}$/i, "")
+		.replace(/\s+/g, " ")
+		.trim();
+	if (words.length < 12) return;
+	return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+function usableDescription(description: string | undefined, headline: string) {
+	if (!description) return;
+	const text = description.replace(/\s+/g, " ").trim();
+	if (text.length < 40 || text.toLowerCase() === headline.toLowerCase()) return;
+	if (/subscribe|sign in to read|enable javascript|ad blocker/i.test(text))
+		return;
+	return text;
+}
+
 function chooseText(fromJsonLd?: string, fromReader?: string) {
 	const structured = fromJsonLd?.trim() ?? "";
 	const readable = fromReader?.trim() ?? "";
@@ -217,36 +366,97 @@ function chooseText(fromJsonLd?: string, fromReader?: string) {
 	return structured || readable;
 }
 
-async function fetchArticle(rawUrl: string): Promise<Article> {
-	const { finalUrl, html } = await fetchHtml(rawUrl);
-	const virtualConsole = new VirtualConsole();
-	virtualConsole.on("error", () => {});
-	const dom = new JSDOM(html, { url: finalUrl, virtualConsole });
-	const document = dom.window.document;
-	const structured = longestArticleBody(document);
-	const readable = readableText(document);
-	const text = chooseText(structured?.text, readable.text);
-	if (text.length < MIN_CHARS) {
-		throw new Error("The page did not include a readable article.");
-	}
-	const clipped =
-		text.length > MAX_CHARS ? `${text.slice(0, MAX_CHARS)}\n[truncated]` : text;
+function paywallArticle(
+	url: string,
+	title: string,
+	facts?: {
+		siteName?: string;
+		published?: string;
+		description?: string;
+	},
+): Article {
+	const description = usableDescription(facts?.description, title);
 	return {
-		url: finalUrl,
-		title: structured?.title || readable.title,
-		siteName: readable.siteName,
-		published: structured?.published || readable.published,
-		text: clipped,
+		url,
+		title,
+		siteName: facts?.siteName,
+		published: facts?.published,
+		text: description ?? title,
+		paywalled: true,
 	};
 }
 
+async function fetchArticle(rawUrl: string): Promise<Article> {
+	const fetched = await fetchHtml(rawUrl);
+	const blocked =
+		fetched.status === 401 || fetched.status === 402 || fetched.status === 403;
+	const virtualConsole = new VirtualConsole();
+	virtualConsole.on("error", () => {});
+	const dom = new JSDOM(fetched.html, {
+		url: fetched.finalUrl,
+		virtualConsole,
+	});
+	const document = dom.window.document;
+	const facts = pageFacts(document);
+	const structured = longestArticleBody(document);
+	const readable = readableText(document);
+	const text = chooseText(structured?.text, readable.text);
+	const siteName = facts.siteName || readable.siteName;
+	const published =
+		structured?.published || facts.published || readable.published;
+	const pageTitle = usefulHeadline(
+		structured?.title || facts.headline || readable.title,
+		fetched.finalUrl,
+		siteName,
+	);
+	const looksPaywalled =
+		blocked ||
+		facts.paywalled ||
+		/paywall|subscribe to (read|continue)|sign in to continue|please enable js|captcha-delivery/i.test(
+			fetched.html,
+		);
+
+	if (text.length >= MIN_CHARS) {
+		const clipped =
+			text.length > MAX_CHARS
+				? `${text.slice(0, MAX_CHARS)}\n[truncated]`
+				: text;
+		return {
+			url: fetched.finalUrl,
+			title: pageTitle,
+			siteName,
+			published,
+			text: clipped,
+		};
+	}
+
+	const title = looksPaywalled
+		? pageTitle || headlineFromUrl(fetched.finalUrl)
+		: pageTitle;
+	if (title && looksPaywalled) {
+		return paywallArticle(fetched.finalUrl, title, {
+			siteName,
+			published,
+			description: facts.description,
+		});
+	}
+
+	throw new Error("The page did not include a readable article.");
+}
+
 function formatArticle(article: Article) {
+	const paywallNote = article.paywalled
+		? article.text === article.title
+			? "Note: The full article is behind a paywall. Only the headline was available."
+			: "Note: The full article is behind a paywall. Only the headline and a short description were available."
+		: null;
 	return [
 		"Retrieved article",
 		`URL: ${article.url}`,
 		article.title ? `Title: ${article.title}` : null,
 		article.siteName ? `Site: ${article.siteName}` : null,
 		article.published ? `Published: ${article.published}` : null,
+		paywallNote,
 		"",
 		article.text,
 	]

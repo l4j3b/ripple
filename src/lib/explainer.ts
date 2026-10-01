@@ -39,6 +39,7 @@ export const explainerSchema = z
 		title: z.string().min(1),
 		takeaway: z.string().min(1),
 		totalSeconds: z.coerce.number().optional(),
+		followUps: z.array(z.string()).optional(),
 		scenes: z.array(sceneSchema).min(1),
 	})
 	.transform((explainer) => {
@@ -53,7 +54,11 @@ export const explainerSchema = z
 			scenes.push(scene);
 			total += scene.durationSeconds;
 		}
-		return { ...explainer, scenes, totalSeconds: total };
+		const followUps = (explainer.followUps ?? [])
+			.map((question) => question.trim())
+			.filter(Boolean)
+			.slice(0, 3);
+		return { ...explainer, scenes, totalSeconds: total, followUps };
 	});
 
 export type Explainer = z.infer<typeof explainerSchema>;

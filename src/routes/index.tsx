@@ -28,14 +28,31 @@ import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { InputGroupAddon } from "#/components/ui/input-group";
 import type { ExplainerUIMessage } from "#/lib/explainer";
+import { LANDING_EXAMPLES } from "#/lib/landing-examples";
 import { cn } from "#/lib/utils";
+
+const SUGGESTIONS = [
+	{
+		label: "Fed raises rates a quarter point",
+		text: "Fed raises rates a quarter point in first move of Warsh era",
+	},
+	{
+		label: "Retail sales surge the most since March",
+		text: "Retail sales last month surged by the most since March, when a spike in gasoline prices and a boost from tax refunds helped account for higher spending totals.",
+	},
+	{
+		label: "EU floats associate membership for Canada",
+		text: "EU chief floats associate membership for Canada after U.S. trade attacks",
+	},
+	{
+		label: "Why companies won't pause on AI (WSJ)",
+		text: "https://www.wsj.com/cio-journal/why-companies-are-unlikely-to-hit-pause-on-ai-9a4f6818",
+	},
+];
 
 export const Route = createFileRoute("/")({ component: Home });
 
-function animateComposerMove(
-	composer: HTMLElement | null,
-	update: () => void,
-) {
+function animateComposerMove(composer: HTMLElement | null, update: () => void) {
 	const reduceMotion = window.matchMedia(
 		"(prefers-reduced-motion: reduce)",
 	).matches;
@@ -66,40 +83,15 @@ function animateComposerMove(
 		.catch(() => {});
 }
 
-const EXAMPLES = [
-	{
-		label: "Fed raises rates a quarter point",
-		text: "Fed raises rates a quarter point in first move of Warsh era",
-	},
-	{
-		label: "Retail sales surge the most since March",
-		text: "Retail sales last month surged by the most since March, when a spike in gasoline prices and a boost from tax refunds helped account for higher spending totals.",
-	},
-	{
-		label: "EU floats associate membership for Canada",
-		text: "EU chief floats associate membership for Canada after U.S. trade attacks",
-	},
-	{
-		label: "Why companies won't pause on AI (WSJ)",
-		text: "https://www.wsj.com/cio-journal/why-companies-are-unlikely-to-hit-pause-on-ai-9a4f6818",
-	},
-];
-
 function Home() {
 	const [chatId, setChatId] = useState("ripple");
 	const [chatOpen, setChatOpen] = useState(false);
 	const [pendingText, setPendingText] = useState<string | null>(null);
-	const {
-		messages,
-		sendMessage,
-		status,
-		stop,
-		error,
-		regenerate,
-	} = useChat<ExplainerUIMessage>({
-		id: chatId,
-		transport: new DefaultChatTransport({ api: "/api/chat" }),
-	});
+	const { messages, sendMessage, status, stop, error, regenerate } =
+		useChat<ExplainerUIMessage>({
+			id: chatId,
+			transport: new DefaultChatTransport({ api: "/api/chat" }),
+		});
 
 	const hasStarted = chatOpen || messages.length > 0;
 	const lastMessage = messages.at(-1);
@@ -111,8 +103,18 @@ function Home() {
 			: undefined;
 	const isGenerating = status === "submitted" || status === "streaming";
 	const isWaitingForVideo = isGenerating && !liveToolPart;
+	const lastUserText =
+		messages
+			.filter((message) => message.role === "user")
+			.at(-1)
+			?.parts.map((part) => (part.type === "text" ? part.text : ""))
+			.join(" ") ??
+		pendingText ??
+		"";
+	const readingLink = /\bhttps?:\/\//i.test(lastUserText);
 
 	const composerRef = useRef<HTMLDivElement>(null);
+	const landingScrollRef = useRef<HTMLDivElement>(null);
 	const landingSlotRef = useRef<HTMLDivElement>(null);
 
 	useLayoutEffect(() => {
@@ -147,9 +149,12 @@ function Home() {
 		place();
 		const observer = new ResizeObserver(place);
 		observer.observe(composer);
+		const scroller = landingScrollRef.current;
+		scroller?.addEventListener("scroll", place, { passive: true });
 		window.addEventListener("resize", place);
 		return () => {
 			observer.disconnect();
+			scroller?.removeEventListener("scroll", place);
 			window.removeEventListener("resize", place);
 		};
 	}, [hasStarted]);
@@ -176,10 +181,7 @@ function Home() {
 	};
 
 	useEffect(() => {
-		if (
-			pendingText &&
-			messages.some((message) => message.role === "user")
-		) {
+		if (pendingText && messages.some((message) => message.role === "user")) {
 			setPendingText(null);
 		}
 	}, [messages, pendingText]);
@@ -218,9 +220,7 @@ function Home() {
 			<header
 				className={cn(
 					"shrink-0 overflow-hidden transition-opacity duration-500",
-					hasStarted
-						? "opacity-100"
-						: "pointer-events-none h-0 opacity-0",
+					hasStarted ? "opacity-100" : "pointer-events-none h-0 opacity-0",
 				)}
 				inert={!hasStarted}
 			>
@@ -235,7 +235,7 @@ function Home() {
 					</button>
 					<Button onClick={startOver} size="sm" variant="ghost">
 						<SquarePenIcon className="size-4" />
-						New explainer
+						New Ripple
 					</Button>
 				</div>
 			</header>
@@ -244,133 +244,155 @@ function Home() {
 				<div
 					className={cn(
 						"absolute inset-0 flex flex-col transition-opacity duration-500 ease-out",
-						hasStarted
-							? "opacity-100"
-							: "pointer-events-none opacity-0",
+						hasStarted ? "opacity-100" : "pointer-events-none opacity-0",
 					)}
 					inert={!hasStarted}
 				>
-			<Conversation>
-				<ConversationContent className="mx-auto w-full max-w-3xl pb-8">
-					{pendingText &&
-						!messages.some((message) => message.role === "user") && (
-							<Message from="user">
-								<MessageContent>
-									<p className="whitespace-pre-wrap">{pendingText}</p>
-								</MessageContent>
-							</Message>
-						)}
-					{messages.map((message) => {
-						const parts = message.parts.filter(
-							(part) =>
-								!(
-									part.type === "tool-createExplainerVideo" &&
-									message.id === lastMessage?.id
-								),
-						);
-						const hasVisiblePart = parts.some(
-							(part) =>
-								part.type === "text" ||
-								part.type === "tool-createExplainerVideo",
-						);
-						if (!hasVisiblePart) return null;
+					<Conversation>
+						<ConversationContent className="mx-auto w-full max-w-3xl pb-8">
+							{pendingText &&
+								!messages.some((message) => message.role === "user") && (
+									<Message from="user">
+										<MessageContent>
+											<p className="whitespace-pre-wrap">{pendingText}</p>
+										</MessageContent>
+									</Message>
+								)}
+							{messages.map((message) => {
+								const parts = message.parts.filter(
+									(part) =>
+										!(
+											part.type === "tool-createExplainerVideo" &&
+											message.id === lastMessage?.id
+										),
+								);
+								const hasVisiblePart = parts.some(
+									(part) =>
+										part.type === "text" ||
+										part.type === "tool-createExplainerVideo",
+								);
+								if (!hasVisiblePart) return null;
 
-						return (
-							<Message from={message.role} key={message.id}>
-								<MessageContent
-									className={cn(message.role === "assistant" && "w-full")}
-								>
-									{parts.map((part, index) => {
-										const key = `${message.id}-${index}`;
-										switch (part.type) {
-											case "text":
-												return message.role === "user" ? (
-													<p className="whitespace-pre-wrap" key={key}>
-														{part.text}
-													</p>
-												) : (
-													<MessageResponse key={key}>
-														{part.text}
-													</MessageResponse>
-												);
-											case "tool-createExplainerVideo":
-												return (
-													<ExplainerVideoCard invocation={part} key={key} />
-												);
-											default:
-												return null;
-										}
-									})}
-								</MessageContent>
-							</Message>
-						);
-					})}
+								return (
+									<Message from={message.role} key={message.id}>
+										<MessageContent
+											className={cn(message.role === "assistant" && "w-full")}
+										>
+											{parts.map((part, index) => {
+												const key = `${message.id}-${index}`;
+												switch (part.type) {
+													case "text":
+														return message.role === "user" ? (
+															<p className="whitespace-pre-wrap" key={key}>
+																{part.text}
+															</p>
+														) : (
+															<MessageResponse key={key}>
+																{part.text}
+															</MessageResponse>
+														);
+													case "tool-createExplainerVideo":
+														return (
+															<ExplainerVideoCard
+																invocation={part}
+																key={key}
+																onFollowUp={submit}
+															/>
+														);
+													default:
+														return null;
+												}
+											})}
+										</MessageContent>
+									</Message>
+								);
+							})}
 
-					{(isWaitingForVideo || liveToolPart) && (
-						<Message from="assistant" key="live-explainer">
-							<MessageContent className="w-full">
-								<ExplainerVideoCard
-									invocation={
-										liveToolPart ?? {
-											state: "input-streaming",
-											input: undefined,
-											toolCallId: "pending",
-										}
-									}
-								/>
-							</MessageContent>
-						</Message>
-					)}
+							{(isWaitingForVideo || liveToolPart) && (
+								<Message from="assistant" key="live-explainer">
+									<MessageContent className="w-full">
+										<ExplainerVideoCard
+											invocation={
+												liveToolPart ?? {
+													state: "input-streaming",
+													input: undefined,
+													toolCallId: "pending",
+												}
+											}
+											onFollowUp={submit}
+											readingLink={readingLink}
+										/>
+									</MessageContent>
+								</Message>
+							)}
 
-					{error && (
-						<div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-destructive text-sm">
-							<span className="flex-1">
-								{error.message || "Something went wrong."}
-							</span>
-							<Button onClick={() => regenerate()} size="sm" variant="outline">
-								<RotateCcwIcon className="size-4" />
-								Retry
-							</Button>
-						</div>
-					)}
-				</ConversationContent>
-				<ConversationScrollButton />
-			</Conversation>
+							{error && (
+								<div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-destructive text-sm">
+									<span className="flex-1">
+										{error.message || "Something went wrong."}
+									</span>
+									<Button
+										onClick={() => regenerate()}
+										size="sm"
+										variant="outline"
+									>
+										<RotateCcwIcon className="size-4" />
+										Retry
+									</Button>
+								</div>
+							)}
+						</ConversationContent>
+						<ConversationScrollButton />
+					</Conversation>
 				</div>
 
 				<div
 					className={cn(
-						"absolute inset-0 flex items-center justify-center px-4 transition-opacity duration-500 ease-out",
-						hasStarted
-							? "pointer-events-none opacity-0"
-							: "opacity-100",
+						"absolute inset-0 overflow-y-auto px-4 transition-opacity duration-500 ease-out",
+						hasStarted ? "pointer-events-none opacity-0" : "opacity-100",
 					)}
 					inert={hasStarted}
+					ref={landingScrollRef}
 				>
-					<div className="flex w-full max-w-2xl flex-col items-center gap-8">
+					<div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-16">
 						<div className="flex flex-col items-center text-center">
 							<Logo className="size-16" />
 							<h1 className="-mt-2 font-bold text-4xl tracking-tight sm:text-5xl">
 								Ripple
 							</h1>
-							<p className="mt-12 max-w-md text-balance text-lg text-muted-foreground">
-								Paste any market headline or article. Get a short video on what
-								it means for your money, then ask follow-ups.
+							<p className="mt-12 mb-4 max-w-md text-balance text-lg text-muted-foreground">
+								Paste any headline or article. Get a short video on how it
+								ripples through markets, then ask follow-ups.
 							</p>
 						</div>
-						<div className="w-full" ref={landingSlotRef} />
-						<div className="flex flex-wrap justify-center gap-2">
-							{EXAMPLES.map((example) => (
+						<div className="w-full max-w-2xl" ref={landingSlotRef} />
+						<div className="flex max-w-2xl flex-wrap justify-center gap-2">
+							{SUGGESTIONS.map((suggestion) => (
 								<Suggestion
 									className="font-normal text-muted-foreground"
-									key={example.label}
+									key={suggestion.label}
 									onClick={submit}
-									suggestion={example.text}
+									suggestion={suggestion.text}
 								>
-									{example.label}
+									{suggestion.label}
 								</Suggestion>
 							))}
 						</div>
+						<section className="mt-8 flex w-full max-w-2xl flex-col gap-4">
+							<h2 className="text-center font-semibold text-2xl tracking-tight">
+								Recent Ripples
+							</h2>
+							<div className="grid grid-cols-2 gap-6">
+								{LANDING_EXAMPLES.map((example) => (
+									<ExplainerVideoCard
+										aspect="4/3"
+										controls="play"
+										invocation={example}
+										key={example.toolCallId}
+									/>
+								))}
+							</div>
+						</section>
 					</div>
 				</div>
 			</div>
