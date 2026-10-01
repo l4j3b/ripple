@@ -2,6 +2,7 @@ import { fal } from "@fal-ai/client";
 
 import {
 	type Explainer,
+	type ExplainerPrepStage,
 	type ExplainerUIMessage,
 	explainerSchema,
 } from "#/lib/explainer";
@@ -65,8 +66,12 @@ function parseExplainer(output: string) {
 
 export async function generateExplainer(
 	messages: ExplainerUIMessage[],
+	onStatus?: (stage: ExplainerPrepStage) => void,
 ): Promise<Explainer> {
-	const sources = await retrieveLinkedArticles(latestUserText(messages));
+	const latest = latestUserText(messages);
+	if (/\bhttps?:\/\//i.test(latest)) onStatus?.("retrieving");
+	const sources = await retrieveLinkedArticles(latest);
+	onStatus?.("writing");
 	let prompt = [
 		"Conversation so far:",
 		toTranscript(messages),

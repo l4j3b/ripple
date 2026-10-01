@@ -38,6 +38,7 @@ Rules for each scene:
 - Visuals: build a physical visual metaphor for the mechanism and film it (for example: ships queuing outside a harbor for a supply bottleneck, water pressure behind a dam for a liquidity squeeze). The metaphor stays consistent across scenes and evolves as the explanation progresses.
 - Shot description: subject and action first, then setting, then camera movement, then lighting. Present tense, one paragraph.
 - Keep the frame clean and uncluttered: only physical objects and natural environments, no readable writing anywhere, no real public figures, no logos or brand marks. Convey information through narration, motion, and setting, not through text, numbers, or charts.
+- Captions: the narration is burned in as on-screen captions, added to every scene for you. Do not describe captions or any other text in videoPrompt. Because every narrated word appears on screen, keep the narration free of filler and spell it the way it should read.
 - Tone: calm, informative, never sensational.
 
 ## Style bible (applies to every scene)

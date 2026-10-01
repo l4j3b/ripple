@@ -4,6 +4,8 @@ import {
 	type Explainer,
 	type ExplainerProgress,
 	sceneVideoPrompt,
+	VIDEO_ASPECT_RATIO,
+	type VideoAspectRatio,
 } from "#/lib/explainer";
 import { joinVideos } from "#/server/join-videos";
 
@@ -14,7 +16,7 @@ type H3MaxVideoInput = {
 	prompt: string;
 	duration: number;
 	resolution: "480P" | "768P" | "1080P";
-	aspect_ratio: "4:3" | "16:9" | "9:16";
+	aspect_ratio: VideoAspectRatio;
 	prompt_expansion_mode: "disabled";
 };
 
@@ -32,7 +34,7 @@ async function generateScene(prompt: string, duration: number) {
 		prompt,
 		duration,
 		resolution: VIDEO_RESOLUTION,
-		aspect_ratio: "4:3",
+		aspect_ratio: VIDEO_ASPECT_RATIO,
 		prompt_expansion_mode: "disabled",
 	});
 	const url = (data as VideoOutput).video?.url;

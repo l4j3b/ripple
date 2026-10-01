@@ -34,7 +34,13 @@ export const Route = createFileRoute("/api/chat")({
 
 				const stream = createUIMessageStream<ExplainerUIMessage>({
 					execute: async ({ writer }) => {
-						const explainer = await generateExplainer(messages);
+						const explainer = await generateExplainer(messages, (stage) => {
+							writer.write({
+								type: "data-status",
+								id: "explainer-status",
+								data: { stage },
+							});
+						});
 						const toolCallId = generateId();
 						writer.write({
 							type: "tool-input-available",

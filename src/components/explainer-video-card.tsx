@@ -1,21 +1,44 @@
 import { ChevronDownIcon, PlayIcon } from "lucide-react";
-import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
+import {
+	type ReactNode,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 
-import { Shimmer } from "#/components/ai-elements/shimmer";
 import { Suggestion } from "#/components/ai-elements/suggestion";
 import { Spinner } from "#/components/ui/spinner";
-import { type ExplainerVideoInvocation, sceneNarration } from "#/lib/explainer";
+import {
+	type ExplainerVideoInvocation,
+	sceneNarration,
+	VIDEO_ASPECT_RATIO,
+	type VideoAspectRatio,
+} from "#/lib/explainer";
 import { cn } from "#/lib/utils";
 
 const RIPPLE_DELAYS = ["0s", "0.8s", "1.6s"];
+
+const ASPECT_CLASS: Record<VideoAspectRatio, string> = {
+	"4:3": "aspect-[4/3]",
+	"16:9": "aspect-video",
+};
+const [ASPECT_WIDTH, ASPECT_HEIGHT] = VIDEO_ASPECT_RATIO.split(":").map(Number);
 
 function formatDuration(seconds: number) {
 	const minutes = Math.floor(seconds / 60);
 	return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-function statusText(invocation: ExplainerVideoInvocation) {
-	if (invocation.state === "input-streaming") return "Writing the script…";
+function statusText(
+	invocation: ExplainerVideoInvocation,
+	phase?: "retrieving" | "writing",
+) {
+	if (invocation.state === "input-streaming") {
+		return phase === "retrieving"
+			? "Retrieving the link…"
+			: "Writing the script…";
+	}
 	const progress =
 		invocation.state === "output-available"
 			? invocation.output.progress
@@ -29,14 +52,14 @@ function statusText(invocation: ExplainerVideoInvocation) {
 export function ExplainerVideoCard({
 	invocation,
 	onFollowUp,
-	readingLink = false,
-	aspect = "video",
+	onOpen,
+	phase,
 	controls = "native",
 }: {
 	invocation: ExplainerVideoInvocation;
 	onFollowUp?: (question: string) => void;
-	readingLink?: boolean;
-	aspect?: "video" | "4/3";
+	onOpen?: () => void;
+	phase?: "retrieving" | "writing";
 	controls?: "native" | "play";
 }) {
 	const videoUrl =
@@ -47,6 +70,15 @@ export function ExplainerVideoCard({
 	const [playing, setPlaying] = useState(false);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoReady = videoUrl != null && readyUrl === videoUrl;
+
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!videoUrl || !video) return;
+		const markReady = () => setReadyUrl(videoUrl);
+		if (video.readyState >= 2) markReady();
+		video.addEventListener("loadeddata", markReady);
+		return () => video.removeEventListener("loadeddata", markReady);
+	}, [videoUrl]);
 
 	const togglePlayback = () => {
 		const video = videoRef.current;
@@ -71,7 +103,7 @@ export function ExplainerVideoCard({
 	}
 
 	const input = invocation.input;
-	const status = statusText(invocation);
+	const status = statusText(invocation, phase);
 	const followUps = (input?.followUps ?? []).filter(
 		(question): question is string => Boolean(question),
 	);
@@ -93,7 +125,7 @@ export function ExplainerVideoCard({
 				<div
 					className={cn(
 						"relative overflow-hidden bg-slate-900",
-						aspect === "4/3" ? "aspect-[4/3]" : "aspect-video",
+						ASPECT_CLASS[VIDEO_ASPECT_RATIO],
 					)}
 				>
 					{videoUrl && (
@@ -103,7 +135,7 @@ export function ExplainerVideoCard({
 								videoReady ? "opacity-100" : "pointer-events-none opacity-0",
 							)}
 							controls={controls === "native"}
-							height={aspect === "4/3" ? 3 : 9}
+							height={ASPECT_HEIGHT}
 							onClick={
 								controls === "play" && playing ? togglePlayback : undefined
 							}
@@ -118,7 +150,7 @@ export function ExplainerVideoCard({
 								if (node && node.readyState >= 2) setReadyUrl(videoUrl);
 							}}
 							src={videoUrl}
-							width={aspect === "4/3" ? 4 : 16}
+							width={ASPECT_WIDTH}
 						>
 							<track kind="captions" label="English" srcLang="en" />
 						</video>
@@ -135,7 +167,12 @@ export function ExplainerVideoCard({
 							</span>
 						</button>
 					)}
-					{!videoReady && (
+					{!videoReady && videoUrl && (
+						<div className="absolute inset-0 flex items-center justify-center bg-slate-900">
+							<Spinner className="size-8 text-white/80" />
+						</div>
+					)}
+					{!videoReady && !videoUrl && (
 						<div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900">
 							<div className="pointer-events-none absolute inset-0 animate-[sweep_2.8s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
 
@@ -172,13 +209,25 @@ export function ExplainerVideoCard({
 				<AnimatedHeight>
 					<div className="space-y-2 p-4">
 						{input?.title ? (
-							<h3 className="font-semibold text-base leading-snug">
-								{input.title}
-							</h3>
+							onOpen ? (
+								<button
+									className="cursor-pointer text-left font-semibold text-base leading-snug underline-offset-4 hover:underline"
+									onClick={onOpen}
+									type="button"
+								>
+									{input.title}
+								</button>
+							) : (
+								<h3 className="font-semibold text-base leading-snug">
+									{input.title}
+								</h3>
+							)
 						) : (
-							<Shimmer className="font-semibold text-base">
-								{readingLink ? "Reading the story…" : "Thinking it through…"}
-							</Shimmer>
+							<div aria-hidden="true" className="space-y-2.5 py-0.5">
+								<div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
+								<div className="h-3.5 w-full animate-pulse rounded-md bg-muted" />
+								<div className="h-3.5 w-4/5 animate-pulse rounded-md bg-muted" />
+							</div>
 						)}
 						{input?.takeaway && (
 							<p className="text-muted-foreground text-sm leading-relaxed">
@@ -188,7 +237,7 @@ export function ExplainerVideoCard({
 						{scriptLines.length > 0 && (
 							<details className="group pt-1">
 								<summary className="flex cursor-pointer list-none items-center gap-1 font-medium text-muted-foreground text-xs hover:text-foreground">
-									Script
+									Transcript
 									<ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
 								</summary>
 								<ol className="mt-2 space-y-2 rounded-lg bg-muted p-3 text-muted-foreground text-xs leading-relaxed">

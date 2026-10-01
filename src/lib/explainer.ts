@@ -8,6 +8,9 @@ export const MAX_TOTAL_SECONDS = 180;
 
 export const WORDS_PER_SECOND = 2.3;
 
+export type VideoAspectRatio = "4:3" | "16:9";
+export const VIDEO_ASPECT_RATIO: VideoAspectRatio = "4:3";
+
 const sceneSchema = z
 	.object({
 		beat: z.string().optional(),
@@ -63,19 +66,80 @@ export const explainerSchema = z
 
 export type Explainer = z.infer<typeof explainerSchema>;
 
-export const NO_TEXT_RULE =
-	"No on-screen text, numbers, charts, logos, tickers, labels, dials, or real public figures.";
+const CAPTION_STYLE =
+	"TikTok-style animated captions, timed to the voice: a single centered line near the bottom of the frame, bold uppercase sans-serif text with letters about 7% of the frame height, the same size and position for every caption. All caption text is pure white (#FFFFFF). The word being spoken is highlighted with a solid vivid purple (#8B5CF6) rounded box behind it while its text stays white. Each caption pops in as it is spoken and replaces the previous one.";
+
+const MAX_CAPTION_WORDS = 4;
+const CONNECTORS = new Set([
+	"a",
+	"an",
+	"and",
+	"as",
+	"at",
+	"by",
+	"for",
+	"from",
+	"in",
+	"into",
+	"of",
+	"on",
+	"or",
+	"the",
+	"to",
+	"with",
+]);
+
+function splitPhrase(words: string[]) {
+	const count = Math.ceil(words.length / MAX_CAPTION_WORDS);
+	const size = Math.ceil(words.length / count);
+	const chunks: string[][] = [];
+	for (let i = 0; i < words.length; i += size) {
+		chunks.push(words.slice(i, i + size));
+	}
+	for (let i = 0; i < chunks.length - 1; i++) {
+		const chunk = chunks[i];
+		const last = chunk.at(-1)?.toLowerCase();
+		if (chunk.length > 1 && last && CONNECTORS.has(last)) {
+			chunks[i + 1].unshift(chunk.pop() as string);
+		}
+	}
+	return chunks;
+}
+
+export function captionChunks(narration: string) {
+	const phrases: string[][] = [[]];
+	for (const word of narration.split(/\s+/).filter(Boolean)) {
+		phrases.at(-1)?.push(word);
+		if (/[.,;:!?—]$/.test(word)) phrases.push([]);
+	}
+	return phrases
+		.filter((phrase) => phrase.length > 0)
+		.flatMap(splitPhrase)
+		.map((chunk) => chunk.join(" ").toUpperCase());
+}
+
+function narrationQuote(videoPrompt: string) {
+	return videoPrompt.match(/says,?\s*[“"]([^”"]+)[”"]/i)?.[1];
+}
 
 export function sceneVideoPrompt(explainer: Explainer, scene: Scene) {
 	const prompt = scene.videoPrompt.trim();
 	const withStyle = prompt.startsWith(explainer.styleBible)
 		? prompt
 		: `${explainer.styleBible}\n\n${prompt}`;
-	return `${withStyle}\n\n${NO_TEXT_RULE}`;
+	const narration = narrationQuote(prompt);
+	const captions = narration
+		? `\n\n${CAPTION_STYLE} The captions appear in this exact order: ${captionChunks(
+				narration,
+			)
+				.map((chunk) => `"${chunk}"`)
+				.join(", then ")}. Captions spelled correctly.`
+		: "";
+	return `${withStyle}${captions}`;
 }
 
 export function sceneNarration(videoPrompt: string) {
-	return videoPrompt.match(/says,?\s*[“"]([^”"]+)[”"]/i)?.[1] ?? videoPrompt;
+	return narrationQuote(videoPrompt) ?? videoPrompt;
 }
 
 export type ExplainerProgress = {
@@ -84,6 +148,8 @@ export type ExplainerProgress = {
 	scenesTotal: number;
 };
 
+export type ExplainerPrepStage = "retrieving" | "writing";
+
 export type ExplainerUITools = {
 	createExplainerVideo: {
 		input: Explainer;
@@ -91,7 +157,11 @@ export type ExplainerUITools = {
 	};
 };
 
-export type ExplainerUIMessage = UIMessage<never, never, ExplainerUITools>;
+export type ExplainerUIMessage = UIMessage<
+	never,
+	{ status: { stage: ExplainerPrepStage } },
+	ExplainerUITools
+>;
 
 export type ExplainerVideoInvocation = UIToolInvocation<
 	ExplainerUITools["createExplainerVideo"]

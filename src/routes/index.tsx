@@ -1,8 +1,8 @@
 import { useChat } from "@ai-sdk/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { DefaultChatTransport } from "ai";
-import { RotateCcwIcon, SquarePenIcon } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { HeartIcon, RotateCcwIcon, SquarePenIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
 import {
@@ -28,34 +28,19 @@ import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { InputGroupAddon } from "#/components/ui/input-group";
 import type { ExplainerUIMessage } from "#/lib/explainer";
-import { LANDING_EXAMPLES } from "#/lib/landing-examples";
+import { LANDING_EXAMPLES, type LandingExample } from "#/lib/landing-examples";
 import { cn } from "#/lib/utils";
-
-const SUGGESTIONS = [
-	{
-		label: "Fed raises rates a quarter point",
-		text: "Fed raises rates a quarter point in first move of Warsh era",
-	},
-	{
-		label: "Retail sales surge the most since March",
-		text: "Retail sales last month surged by the most since March, when a spike in gasoline prices and a boost from tax refunds helped account for higher spending totals.",
-	},
-	{
-		label: "EU floats associate membership for Canada",
-		text: "EU chief floats associate membership for Canada after U.S. trade attacks",
-	},
-	{
-		label: "Why companies won't pause on AI (WSJ)",
-		text: "https://www.wsj.com/cio-journal/why-companies-are-unlikely-to-hit-pause-on-ai-9a4f6818",
-	},
-];
 
 export const Route = createFileRoute("/")({ component: Home });
 
-function animateComposerMove(composer: HTMLElement | null, update: () => void) {
+function animateComposerMove(
+	getComposer: () => HTMLElement | null,
+	update: () => void,
+) {
 	const reduceMotion = window.matchMedia(
 		"(prefers-reduced-motion: reduce)",
 	).matches;
+	const composer = getComposer();
 	if (!composer || reduceMotion) {
 		flushSync(update);
 		return;
@@ -63,12 +48,14 @@ function animateComposerMove(composer: HTMLElement | null, update: () => void) {
 
 	const first = composer.getBoundingClientRect();
 	flushSync(update);
-	const last = composer.getBoundingClientRect();
+	const next = getComposer();
+	if (!next) return;
+	const last = next.getBoundingClientRect();
 	const dx = first.left - last.left;
 	const dy = first.top - last.top;
 	if (Math.hypot(dx, dy) < 2) return;
 
-	const animation = composer.animate(
+	const animation = next.animate(
 		[
 			{ transform: `translate(${dx}px, ${dy}px)` },
 			{ transform: "translate(0px, 0px)" },
@@ -77,21 +64,49 @@ function animateComposerMove(composer: HTMLElement | null, update: () => void) {
 	);
 	animation.finished
 		.then(() => {
-			composer.style.transform = "";
+			next.style.transform = "";
 			window.dispatchEvent(new Event("resize"));
 		})
 		.catch(() => {});
+}
+
+function exampleThread(example: LandingExample): ExplainerUIMessage[] {
+	const id = example.invocation.toolCallId;
+	return [
+		{
+			id: `${id}-user`,
+			role: "user",
+			parts: [{ type: "text", text: example.prompt }],
+		},
+		{
+			id: `${id}-assistant`,
+			role: "assistant",
+			parts: [
+				{
+					type: "tool-createExplainerVideo",
+					...example.invocation,
+				},
+			],
+		},
+	];
 }
 
 function Home() {
 	const [chatId, setChatId] = useState("ripple");
 	const [chatOpen, setChatOpen] = useState(false);
 	const [pendingText, setPendingText] = useState<string | null>(null);
-	const { messages, sendMessage, status, stop, error, regenerate } =
-		useChat<ExplainerUIMessage>({
-			id: chatId,
-			transport: new DefaultChatTransport({ api: "/api/chat" }),
-		});
+	const {
+		messages,
+		sendMessage,
+		setMessages,
+		status,
+		stop,
+		error,
+		regenerate,
+	} = useChat<ExplainerUIMessage>({
+		id: chatId,
+		transport: new DefaultChatTransport({ api: "/api/chat" }),
+	});
 
 	const hasStarted = chatOpen || messages.length > 0;
 	const lastMessage = messages.at(-1);
@@ -112,72 +127,61 @@ function Home() {
 		pendingText ??
 		"";
 	const readingLink = /\bhttps?:\/\//i.test(lastUserText);
+	const prepStage =
+		lastMessage?.role === "assistant"
+			? lastMessage.parts.find((part) => part.type === "data-status")?.data
+					.stage
+			: undefined;
+	const phase =
+		prepStage === "writing" || !readingLink ? "writing" : "retrieving";
 
 	const composerRef = useRef<HTMLDivElement>(null);
 	const landingScrollRef = useRef<HTMLDivElement>(null);
 	const landingSlotRef = useRef<HTMLDivElement>(null);
 
-	useLayoutEffect(() => {
-		const composer = composerRef.current;
-		if (!composer) return;
-
-		if (hasStarted) {
-			composer.style.position = "";
-			composer.style.top = "";
-			composer.style.left = "";
-			composer.style.width = "";
-			return;
-		}
-
-		const slot = landingSlotRef.current;
-		if (!slot) return;
-
-		const place = () => {
-			slot.style.height = `${composer.offsetHeight}px`;
-			const slotRect = slot.getBoundingClientRect();
-			const parent = composer.offsetParent;
-			const parentRect =
-				parent instanceof HTMLElement
-					? parent.getBoundingClientRect()
-					: { top: 0, left: 0 };
-			composer.style.position = "absolute";
-			composer.style.top = `${slotRect.top - parentRect.top}px`;
-			composer.style.left = `${slotRect.left - parentRect.left}px`;
-			composer.style.width = `${slotRect.width}px`;
-		};
-
-		place();
-		const observer = new ResizeObserver(place);
-		observer.observe(composer);
-		const scroller = landingScrollRef.current;
-		scroller?.addEventListener("scroll", place, { passive: true });
-		window.addEventListener("resize", place);
-		return () => {
-			observer.disconnect();
-			scroller?.removeEventListener("scroll", place);
-			window.removeEventListener("resize", place);
-		};
-	}, [hasStarted]);
-
 	const submit = (text: string) => {
 		const trimmed = text.trim();
 		if (!trimmed || isGenerating) return;
 		if (!hasStarted) {
-			animateComposerMove(composerRef.current, () => {
-				setPendingText(trimmed);
-				setChatOpen(true);
-			});
+			const slot = landingSlotRef.current;
+			const box = composerRef.current;
+			if (slot && box) slot.style.height = `${box.offsetHeight}px`;
+			animateComposerMove(
+				() => composerRef.current,
+				() => {
+					setPendingText(trimmed);
+					setChatOpen(true);
+				},
+			);
 		}
 		sendMessage({ text: trimmed });
 	};
 
+	const openExample = (example: LandingExample) => {
+		if (hasStarted || isGenerating) return;
+		const slot = landingSlotRef.current;
+		const box = composerRef.current;
+		if (slot && box) slot.style.height = `${box.offsetHeight}px`;
+		animateComposerMove(
+			() => composerRef.current,
+			() => {
+				setChatOpen(true);
+				setMessages(exampleThread(example));
+			},
+		);
+	};
+
 	const startOver = () => {
 		if (!hasStarted) return;
-		animateComposerMove(composerRef.current, () => {
-			setPendingText(null);
-			setChatOpen(false);
-			setChatId(crypto.randomUUID());
-		});
+		animateComposerMove(
+			() => composerRef.current,
+			() => {
+				if (landingSlotRef.current) landingSlotRef.current.style.height = "";
+				setPendingText(null);
+				setChatOpen(false);
+				setChatId(crypto.randomUUID());
+			},
+		);
 	};
 
 	useEffect(() => {
@@ -320,7 +324,7 @@ function Home() {
 												}
 											}
 											onFollowUp={submit}
-											readingLink={readingLink}
+											phase={phase}
 										/>
 									</MessageContent>
 								</Message>
@@ -365,49 +369,66 @@ function Home() {
 								ripples through markets, then ask follow-ups.
 							</p>
 						</div>
-						<div className="w-full max-w-2xl" ref={landingSlotRef} />
+						<div className="w-full max-w-2xl" ref={landingSlotRef}>
+							{!hasStarted && (
+								<div className="w-full" ref={composerRef}>
+									{composer}
+								</div>
+							)}
+						</div>
 						<div className="flex max-w-2xl flex-wrap justify-center gap-2">
-							{SUGGESTIONS.map((suggestion) => (
+							{LANDING_EXAMPLES.map((example) => (
 								<Suggestion
 									className="font-normal text-muted-foreground"
-									key={suggestion.label}
+									key={example.label}
 									onClick={submit}
-									suggestion={suggestion.text}
+									suggestion={example.prompt}
 								>
-									{suggestion.label}
+									{example.label}
 								</Suggestion>
 							))}
 						</div>
-						<section className="mt-8 flex w-full max-w-2xl flex-col gap-4">
+						<section className="mt-8 flex w-full max-w-4xl flex-col gap-4">
 							<h2 className="text-center font-semibold text-2xl tracking-tight">
 								Recent Ripples
 							</h2>
 							<div className="grid grid-cols-2 gap-6">
 								{LANDING_EXAMPLES.map((example) => (
 									<ExplainerVideoCard
-										aspect="4/3"
 										controls="play"
-										invocation={example}
-										key={example.toolCallId}
+										invocation={example.invocation}
+										key={example.invocation.toolCallId}
+										onOpen={() => openExample(example)}
 									/>
 								))}
 							</div>
 						</section>
+						<footer className="mt-16 flex flex-col items-center gap-8 pb-10 text-center">
+							<p className="max-w-2xl text-pretty text-muted-foreground/60 text-xs">
+								Educational explainers, not financial advice. Videos are
+								AI-generated; check the sources.
+							</p>
+							<p className="inline-flex items-center gap-1 text-muted-foreground text-sm">
+								Made with
+								<HeartIcon
+									aria-hidden="true"
+									className="size-3.5 fill-emerald-400 text-emerald-400"
+								/>
+								in Sausalito.
+							</p>
+						</footer>
 					</div>
 				</div>
 			</div>
 
-			<div
-				className={cn(
-					"z-20",
-					hasStarted
-						? "relative mx-auto w-full max-w-3xl px-4 pb-4"
-						: "absolute",
-				)}
-				ref={composerRef}
-			>
-				{composer}
-			</div>
+			{hasStarted && (
+				<div
+					className="relative z-20 mx-auto w-full max-w-3xl px-4 pb-4"
+					ref={composerRef}
+				>
+					{composer}
+				</div>
+			)}
 		</main>
 	);
 }
