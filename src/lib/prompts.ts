@@ -65,6 +65,7 @@ Metaphor scenes:
 - Build one physical visual metaphor for the mechanism and show it (for example: ships queuing outside a harbor for a supply bottleneck, water pressure behind a dam for a liquidity squeeze). The metaphor stays consistent across scenes and evolves as the explanation progresses.
 - Recurring elements: every clip is generated from its own prompt, so the model has no memory of earlier scenes. Define the recurring subjects once in "recurringElements" with precise visual descriptions (for example: "a grey concrete dam with three steel sluice gates", "a man in a navy work jacket and white hard hat, seen from behind"). Each description commits to one fixed look, with no alternatives ("or") and no markings. Whenever one appears in a scene, copy its description into that videoPrompt word for word.
 - One subject, one action, one camera move per scene. Avoid sequences like "looks up, then turns, then walks away": a short clip cannot show them all.
+- For scenes longer than 10 seconds, pace the action in two timed blocks so it doesn't bunch up, timed to match what the narration says at that moment: "[0-5 seconds] the gates begin to close. [5-12 seconds] the water behind the dam rises." Same subject and setting in both blocks; the second block continues the first action rather than starting a new one.
 - Shot description: subject and action first, then setting, then camera movement, then lighting. Present tense, one paragraph.
 - Keep the frame clean: only physical objects and natural environments. Apart from the captions added for you, no readable writing anywhere, no real public figures, no logos or brand marks. Convey information through narration, motion, and setting, not through text, numbers, or charts.
 - Never show objects that invite writing or numbers: paper, documents, certificates, newspapers, books, signs, screens, phones, monitors, gauges, dials, clocks, charts, banknotes, and markings such as measurement lines, high-water marks, scales, or labels on objects. Never show faces in close-up: show people from behind, in silhouette, at a distance, or as hands.
@@ -72,6 +73,7 @@ Metaphor scenes:
 
 All scenes:
 - Never describe captions: they are added for you at the bottom of every frame.
+- Direct the sound: end the visual description with one short sound cue that plays quietly under the narration, written as "Sound: ...". Metaphor scenes get ambient sound from the scene itself ("Sound: soft rushing water and distant wind"); graphic scenes get subtle whooshes as elements move. Never music: it would jump at every cut between scenes.
 - Tone: calm, informative, never sensational.
 
 ## Style bible (applies to every metaphor scene)
@@ -92,7 +94,7 @@ Reply with a single JSON object and nothing else: no prose, no markdown, no code
   "recurringElements": ["precise visual description of each recurring subject"],
   "look": "cinematic | animated",
   "styleBible": "look-specific style: see Style bible",
-  "title": "Plain-English title, under 60 characters",
+  "title": "Plain-English title in sentence case (capitalize only the first word and proper nouns), under 60 characters",
   "takeaway": "One sentence a non-expert should remember",
   "followUps": ["3 short questions a curious user would ask next"],
   "totalSeconds": <integer, sum of scene durations, at most ${MAX_TOTAL_SECONDS}>,
@@ -101,7 +103,7 @@ Reply with a single JSON object and nothing else: no prose, no markdown, no code
       "beat": "hook | mechanism | impact | uncertainty",
       "visual": "metaphor | graphic",
       "durationSeconds": <integer from ${MIN_SCENE_SECONDS} to ${MAX_SCENE_SECONDS}>,
-      "videoPrompt": "<metaphor: subject and action, setting, camera, lighting | graphic: the diagram, its labels, and what animates>. A narrator says, \\"<one or two complete sentences within the word budget>\\""
+      "videoPrompt": "<metaphor: subject and action, setting, camera, lighting | graphic: the diagram, its labels, and what animates>. Sound: <quiet ambient cue>. A narrator says, \\"<one or two complete sentences within the word budget>\\""
     }
   ]
 }`;

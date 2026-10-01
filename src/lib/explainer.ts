@@ -80,7 +80,10 @@ const GRAPHIC_STYLE =
 	"Clean flat 2D motion graphic in a modern explainer style, on a dark navy background (#0B1220) with a faint grid. Teal (#2DD4BF) and purple (#8B5CF6) accents, green for up and red for down, bold white uppercase sans-serif labels. Smooth eased animation. The bottom quarter of the frame stays empty.";
 
 const NARRATOR_VOICE =
-	"Voice-over by a single off-screen narrator: the same man in every clip, in his forties, with a warm, smooth baritone voice, a neutral General American accent, and crisp diction. Steady pitch and even volume, studio-quality close-mic recording with no reverb or background music. Confident and conversational, speaking quickly at a fast energetic pace, with no pauses between phrases. Nobody on screen speaks or moves their lips.";
+	"Voice-over by a single off-screen narrator. Match the voice in Audio 1 exactly: the same speaker, timbre, accent, and delivery, as a clean close-mic studio recording. Brisk, energetic pace with no long pauses. Nobody on screen speaks or moves their lips. Underneath the voice, only the quiet ambient sound described for this scene. No music.";
+
+const NEGATIVE_RULE =
+	"No other text, garbled characters, misspellings, watermarks, logos, or real public figures.";
 
 const CAPTION_STYLE =
 	"TikTok-style animated captions, timed to the voice: a single centered line near the bottom of the frame, bold uppercase sans-serif text with letters about 7% of the frame height, the same size and position for every caption. All caption text is pure white (#FFFFFF). The word being spoken is highlighted with a solid vivid purple (#8B5CF6) rounded box behind it while its text stays white. Each caption pops in as it is spoken and replaces the previous one.";
@@ -107,10 +110,14 @@ const CONNECTORS = new Set([
 
 function splitPhrase(words: string[]) {
 	const count = Math.ceil(words.length / MAX_CAPTION_WORDS);
-	const size = Math.ceil(words.length / count);
+	const base = Math.floor(words.length / count);
+	const extra = words.length % count;
 	const chunks: string[][] = [];
-	for (let i = 0; i < words.length; i += size) {
-		chunks.push(words.slice(i, i + size));
+	let start = 0;
+	for (let i = 0; i < count; i++) {
+		const size = base + (i < extra ? 1 : 0);
+		chunks.push(words.slice(start, start + size));
+		start += size;
 	}
 	for (let i = 0; i < chunks.length - 1; i++) {
 		const chunk = chunks[i];
@@ -160,7 +167,7 @@ export function sceneVideoPrompt(explainer: Explainer, scene: Scene) {
 				.map((chunk) => `"${chunk}"`)
 				.join(", then ")}. Captions spelled correctly.`
 		: "";
-	return `${withStyle}\n\n${NARRATOR_VOICE}${captions}`;
+	return `${withStyle}\n\n${NARRATOR_VOICE}${captions}\n\n${NEGATIVE_RULE}`;
 }
 
 export function sceneNarration(videoPrompt: string) {

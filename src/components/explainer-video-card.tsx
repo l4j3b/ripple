@@ -23,9 +23,10 @@ const ASPECT_CLASS: Record<VideoAspectRatio, string> = {
 	"4:3": "aspect-[4/3]",
 	"16:9": "aspect-video",
 };
+export const VIDEO_ASPECT_CLASS = ASPECT_CLASS[VIDEO_ASPECT_RATIO];
 const [ASPECT_WIDTH, ASPECT_HEIGHT] = VIDEO_ASPECT_RATIO.split(":").map(Number);
 
-function formatDuration(seconds: number) {
+export function formatDuration(seconds: number) {
 	const minutes = Math.floor(seconds / 60);
 	return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
@@ -52,22 +53,17 @@ function statusText(
 export function ExplainerVideoCard({
 	invocation,
 	onFollowUp,
-	onOpen,
 	phase,
-	controls = "native",
 }: {
 	invocation: ExplainerVideoInvocation;
 	onFollowUp?: (question: string) => void;
-	onOpen?: () => void;
 	phase?: "retrieving" | "writing";
-	controls?: "native" | "play";
 }) {
 	const videoUrl =
 		invocation.state === "output-available"
 			? invocation.output.videoUrl
 			: undefined;
 	const [readyUrl, setReadyUrl] = useState<string | null>(null);
-	const [playing, setPlaying] = useState(false);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const videoReady = videoUrl != null && readyUrl === videoUrl;
 
@@ -79,20 +75,6 @@ export function ExplainerVideoCard({
 		video.addEventListener("loadeddata", markReady);
 		return () => video.removeEventListener("loadeddata", markReady);
 	}, [videoUrl]);
-
-	const togglePlayback = () => {
-		const video = videoRef.current;
-		if (!video) return;
-		if (video.paused) {
-			void video.play().then(
-				() => setPlaying(true),
-				() => setPlaying(false),
-			);
-			return;
-		}
-		video.pause();
-		setPlaying(false);
-	};
 
 	if (invocation.state === "output-error") {
 		return (
@@ -125,7 +107,7 @@ export function ExplainerVideoCard({
 				<div
 					className={cn(
 						"relative overflow-hidden bg-slate-900",
-						ASPECT_CLASS[VIDEO_ASPECT_RATIO],
+						VIDEO_ASPECT_CLASS,
 					)}
 				>
 					{videoUrl && (
@@ -134,15 +116,10 @@ export function ExplainerVideoCard({
 								"absolute inset-0 size-full object-cover",
 								videoReady ? "opacity-100" : "pointer-events-none opacity-0",
 							)}
-							controls={controls === "native"}
+							controls
 							height={ASPECT_HEIGHT}
-							onClick={
-								controls === "play" && playing ? togglePlayback : undefined
-							}
-							onEnded={() => setPlaying(false)}
 							onError={() => setReadyUrl(videoUrl)}
 							onLoadedData={() => setReadyUrl(videoUrl)}
-							onPause={() => setPlaying(false)}
 							playsInline
 							preload="auto"
 							ref={(node) => {
@@ -154,18 +131,6 @@ export function ExplainerVideoCard({
 						>
 							<track kind="captions" label="English" srcLang="en" />
 						</video>
-					)}
-					{controls === "play" && videoReady && !playing && (
-						<button
-							aria-label="Play video"
-							className="absolute inset-0 flex cursor-pointer items-center justify-center"
-							onClick={togglePlayback}
-							type="button"
-						>
-							<span className="flex size-14 items-center justify-center rounded-full bg-black/45 ring-1 ring-white/30 backdrop-blur">
-								<PlayIcon className="size-6 translate-x-0.5 fill-white text-white" />
-							</span>
-						</button>
 					)}
 					{!videoReady && videoUrl && (
 						<div className="absolute inset-0 flex items-center justify-center bg-slate-900">
@@ -209,19 +174,9 @@ export function ExplainerVideoCard({
 				<AnimatedHeight>
 					<div className="space-y-2 p-4">
 						{input?.title ? (
-							onOpen ? (
-								<button
-									className="cursor-pointer text-left font-semibold text-base leading-snug underline-offset-4 hover:underline"
-									onClick={onOpen}
-									type="button"
-								>
-									{input.title}
-								</button>
-							) : (
-								<h3 className="font-semibold text-base leading-snug">
-									{input.title}
-								</h3>
-							)
+							<h3 className="font-semibold text-base leading-snug">
+								{input.title}
+							</h3>
 						) : (
 							<div aria-hidden="true" className="space-y-2.5 py-0.5">
 								<div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
@@ -236,7 +191,7 @@ export function ExplainerVideoCard({
 						)}
 						{scriptLines.length > 0 && (
 							<details className="group pt-1">
-								<summary className="flex cursor-pointer list-none items-center gap-1 font-medium text-muted-foreground text-xs hover:text-foreground">
+								<summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-md font-medium text-muted-foreground text-xs outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card [&::-webkit-details-marker]:hidden">
 									Transcript
 									<ChevronDownIcon className="size-3.5 transition-transform group-open:rotate-180" />
 								</summary>

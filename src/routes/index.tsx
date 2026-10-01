@@ -1,7 +1,12 @@
 import { useChat } from "@ai-sdk/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { DefaultChatTransport } from "ai";
-import { HeartIcon, RotateCcwIcon, SquarePenIcon } from "lucide-react";
+import {
+	HeartIcon,
+	LinkIcon,
+	RotateCcwIcon,
+	SquarePenIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
@@ -24,10 +29,16 @@ import {
 	PromptInputTextarea,
 } from "#/components/ai-elements/prompt-input";
 import { Suggestion } from "#/components/ai-elements/suggestion";
+import { ExampleCard } from "#/components/example-card";
 import { ExplainerVideoCard } from "#/components/explainer-video-card";
 import { Logo } from "#/components/logo";
 import { Button } from "#/components/ui/button";
 import { InputGroupAddon } from "#/components/ui/input-group";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import type { ExplainerUIMessage } from "#/lib/explainer";
 import { LANDING_EXAMPLES, type LandingExample } from "#/lib/landing-examples";
 import { cn } from "#/lib/utils";
@@ -381,26 +392,54 @@ function Home() {
 							)}
 						</div>
 						<div className="flex max-w-2xl flex-wrap justify-center gap-2">
-							{LANDING_EXAMPLES.map((example) => (
-								<Suggestion
-									className="font-normal text-muted-foreground"
-									key={example.label}
-									onClick={submit}
-									suggestion={example.prompt}
-								>
-									{example.label}
-								</Suggestion>
-							))}
+							{LANDING_EXAMPLES.map((example) => {
+								const link = /^https?:\/\//i.test(example.prompt)
+									? example.prompt
+									: null;
+								if (!link) {
+									return (
+										<Suggestion
+											className="font-normal text-muted-foreground"
+											key={example.label}
+											onClick={submit}
+											suggestion={example.prompt}
+										>
+											{example.label}
+										</Suggestion>
+									);
+								}
+								return (
+									<Tooltip key={example.label}>
+										<TooltipTrigger asChild>
+											<Suggestion
+												className="font-normal text-muted-foreground"
+												onClick={submit}
+												suggestion={example.prompt}
+											>
+												<LinkIcon aria-hidden="true" className="size-3.5" />
+												{example.label}
+											</Suggestion>
+										</TooltipTrigger>
+										<TooltipContent
+											className="max-w-[min(40rem,calc(100vw-2rem))] whitespace-nowrap text-left font-normal"
+											side="top"
+											sideOffset={6}
+										>
+											{link}
+										</TooltipContent>
+									</Tooltip>
+								);
+							})}
 						</div>
 						<section className="mt-8 flex w-full max-w-4xl flex-col gap-4">
 							<h2 className="text-center font-semibold text-2xl tracking-tight">
 								Recent Ripples
 							</h2>
-							<div className="grid grid-cols-2 gap-6">
+							<div className="grid grid-cols-2 gap-x-6 gap-y-8">
 								{LANDING_EXAMPLES.map((example) => (
-									<ExplainerVideoCard
-										controls="play"
-										invocation={example.invocation}
+									<ExampleCard
+										active={!hasStarted}
+										example={example}
 										key={example.invocation.toolCallId}
 										onOpen={() => openExample(example)}
 									/>

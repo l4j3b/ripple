@@ -988,7 +988,9 @@ export const PromptInputTextarea = ({
 				const submitButton = form?.querySelector(
 					'button[type="submit"]',
 				) as HTMLButtonElement | null;
-				if (submitButton?.disabled) {
+				// While a reply is in progress the submit control is a Stop button,
+				// so Enter must not send and clear whatever the user is typing.
+				if (!submitButton || submitButton.disabled) {
 					return;
 				}
 

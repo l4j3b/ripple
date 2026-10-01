@@ -16,6 +16,7 @@ function example(
 export type LandingExample = {
 	label: string;
 	prompt: string;
+	poster: string;
 	invocation: ExplainerVideoInvocation;
 };
 
@@ -23,6 +24,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 	{
 		label: "Fed raises rates a quarter point",
 		prompt: "Fed raises rates a quarter point in first move of Warsh era",
+		poster: "/examples/fed.jpg",
 		invocation: example("example-fed", "/examples/fed.mp4?v=full", {
 			analysis:
 				"The provided headline says the Fed raised rates by a quarter point in the first move of the Warsh era, but no article text was given. Without the article, I cannot confirm who Warsh is, when this happened, what the Fed said about future moves, or what economic conditions prompted the hike. I can explain in general terms how a rate hike works—the Fed raises its target rate, borrowing costs rise, spending and investment slow, inflation cools—but I cannot report specifics of this event. The video will state plainly that only the headline was available, explain the mechanics of a rate hike and its transmission to the economy, and note that the full picture depends on the Fed's guidance and the economic backdrop, which the missing article would have provided.",
@@ -93,6 +95,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "Retail sales surge the most since March",
 		prompt:
 			"Retail sales last month surged by the most since March, when a spike in gasoline prices and a boost from tax refunds helped account for higher spending totals.",
+		poster: "/examples/retail.jpg",
 		invocation: example("example-retail", "/examples/retail.mp4?v=full", {
 			analysis:
 				"Retail sales rose sharply last month, the largest monthly gain since March. The article does not state the exact percentage increase or the current month, so those facts are unknown. Strong retail sales indicate consumers are still spending, which supports economic growth and suggests the economy is not slowing quickly. This matters for markets because central banks watch consumer spending to decide whether to cut interest rates: if people keep spending, inflation may stay elevated, reducing the urgency for rate cuts. Bond yields could rise on the news if investors expect rates to stay higher for longer, while stocks might react positively to growth signals or negatively to fears of delayed rate cuts. The strength of this signal depends on whether the increase was driven by higher prices (people paying more for the same goods) or higher volumes (people buying more), and whether it continues in coming months. Without the exact figure or breakdown, the magnitude of market impact is uncertain.",
@@ -105,7 +108,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 			look: "cinematic",
 			styleBible:
 				"35mm film aesthetic, shallow depth of field, natural daylight with soft shadows, muted earth tones with touches of green and blue",
-			title: "Retail Sales Surge: What It Means for Markets",
+			title: "Retail sales surge: what it means for markets",
 			takeaway:
 				"Strong consumer spending supports growth but may delay interest rate cuts if it keeps inflation elevated.",
 			totalSeconds: 33,
@@ -164,6 +167,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "EU floats associate membership for Canada",
 		prompt:
 			"EU chief floats associate membership for Canada after U.S. trade attacks",
+		poster: "/examples/eu-canada.jpg",
 		invocation: example("example-eu-canada", "/examples/eu-canada.mp4?v=full", {
 			analysis:
 				"The EU is exploring a closer trade relationship with Canada, potentially through associate membership, in response to U.S. trade tensions. This signals a defensive realignment: if the U.S. imposes tariffs or other trade barriers, the EU and Canada may deepen ties to preserve market access and reduce dependence on American trade. For markets, this means potential shifts in trade flows, currency pairs (EUR/CAD could strengthen if a deal materializes), and sectors exposed to transatlantic trade. European exporters facing U.S. tariffs might redirect to Canada; Canadian firms could gain easier access to the EU's single market. The timeline is uncertain—associate membership would require negotiations and approvals—so immediate market impact is likely muted. The key risk: if U.S.-EU or U.S.-Canada tensions ease, the urgency for this partnership fades. Watch for concrete proposals and whether other countries (UK, Australia) seek similar arrangements, which could fragment global trade into regional blocs.",
@@ -177,7 +181,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 			look: "cinematic",
 			styleBible:
 				"35mm film aesthetic, shallow depth of field, cool blue-grey color palette with warm orange accents from safety equipment, overcast daylight with soft diffused shadows, industrial realism",
-			title: "EU and Canada Eye Closer Ties Amid U.S. Trade Tensions",
+			title: "EU and Canada eye closer ties amid U.S. trade tensions",
 			takeaway:
 				"Trade conflicts can push countries to form new partnerships, reshaping which markets and currencies benefit from cross-border flows.",
 			totalSeconds: 43,
@@ -236,6 +240,7 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "Why companies won't pause on AI (WSJ)",
 		prompt:
 			"https://www.wsj.com/cio-journal/why-companies-are-unlikely-to-hit-pause-on-ai-9a4f6818",
+		poster: "/examples/ai-pause.jpg",
 		invocation: example("example-ai-pause", "/examples/ai-pause.mp4?v=full", {
 			analysis:
 				"The headline suggests companies will continue investing in AI despite potential headwinds such as economic uncertainty, high costs, or unclear returns. Without the article text, the specific reasoning is unknown, but the general mechanism is clear: firms perceive AI as competitively necessary rather than optional, meaning investment continues even when immediate ROI is uncertain. This matters for markets because sustained corporate AI spending supports demand for semiconductors, cloud infrastructure, data centers, and energy. It also means capital allocation stays tilted toward technology and away from other uses, which affects valuations in tech versus traditional sectors. The bullish view is that this creates a durable growth story for AI-related equities. The bearish counter is that if returns fail to materialize, the spending becomes a sunk cost and valuations correct sharply. What would prove this view wrong: a wave of project cancellations or a shift in corporate guidance toward cost discipline over AI ambition. The key uncertainty is whether the productivity gains justify the capital outlay, which will only become clear over the next several quarters as deployments mature.",
