@@ -20,6 +20,17 @@ export const MIN_SCENE_WORDS = Math.ceil(
 	MIN_NARRATOR_WORDS_PER_SECOND * (MIN_SCENE_SECONDS + CLIP_OVERRUN_SECONDS),
 );
 
+function wordCount(text: string) {
+	return text.split(/\s+/).filter(Boolean).length;
+}
+
+function durationForWords(words: number) {
+	const seconds = Math.round(
+		words / NARRATOR_WORDS_PER_SECOND - CLIP_OVERRUN_SECONDS,
+	);
+	return Math.min(MAX_SCENE_SECONDS, Math.max(MIN_SCENE_SECONDS, seconds));
+}
+
 export type VideoAspectRatio = "4:3" | "16:9";
 export const VIDEO_ASPECT_RATIO: VideoAspectRatio = "4:3";
 
@@ -93,39 +104,74 @@ const sceneSchema = z
 		diagram: diagramSchema.nullish(),
 	})
 	.superRefine((scene, ctx) => {
-		const narration = sceneNarration(scene.videoPrompt);
-		const words = narration.split(/\s+/).filter(Boolean).length;
-		// A clip longer than its narration makes the narrator repeat words.
-		if (words < MIN_SCENE_WORDS) {
-			ctx.addIssue({
-				code: "custom",
-				message: `The narration "${narration}" has ${words} words; every scene needs at least ${MIN_SCENE_WORDS}. Lengthen it or merge the scene with a neighbor.`,
-			});
-		}
 		if (scene.visual === "graphic" && !scene.diagram) {
 			ctx.addIssue({
 				code: "custom",
-				message: `The graphic scene with narration "${narration}" needs a "diagram" of one of these types: ${DIAGRAM_TYPES.join(", ")}.`,
+				message: `The graphic scene with narration "${sceneNarration(scene.videoPrompt)}" needs a "diagram" of one of these types: ${DIAGRAM_TYPES.join(", ")}.`,
 			});
 		}
 	})
-	.transform((scene) => {
-		const words = sceneNarration(scene.videoPrompt)
-			.split(/\s+/)
-			.filter(Boolean).length;
-		const seconds = Math.round(
-			words / NARRATOR_WORDS_PER_SECOND - CLIP_OVERRUN_SECONDS,
-		);
-		return {
-			...scene,
-			durationSeconds: Math.min(
-				MAX_SCENE_SECONDS,
-				Math.max(MIN_SCENE_SECONDS, seconds),
-			),
-		};
-	});
+	.transform((scene) => ({
+		...scene,
+		durationSeconds: durationForWords(
+			wordCount(sceneNarration(scene.videoPrompt)),
+		),
+	}));
 
 export type Scene = z.infer<typeof sceneSchema>;
+
+// A clip longer than its narration makes the narrator repeat words. The model
+// is told to lengthen a short line or merge it; if it still comes back short,
+// fold that line into a neighbor so the video can generate.
+function foldShortScenes(scenes: Scene[]) {
+	const folded = [...scenes];
+	let index = 0;
+	while (index < folded.length) {
+		const narration = sceneNarration(folded[index].videoPrompt);
+		if (wordCount(narration) >= MIN_SCENE_WORDS || folded.length === 1) {
+			index += 1;
+			continue;
+		}
+		if (index === 0) {
+			folded[1] = withNarration(folded[1], narration, "prepend");
+			folded.shift();
+			continue;
+		}
+		folded[index - 1] = withNarration(folded[index - 1], narration, "append");
+		folded.splice(index, 1);
+		if (
+			wordCount(sceneNarration(folded[index - 1].videoPrompt)) < MIN_SCENE_WORDS
+		) {
+			index -= 1;
+		}
+	}
+	return folded;
+}
+
+function withNarration(
+	scene: Scene,
+	extra: string,
+	placement: "append" | "prepend",
+) {
+	const current = sceneNarration(scene.videoPrompt).trim();
+	const added = extra.trim();
+	const narration =
+		placement === "append" ? `${current} ${added}` : `${added} ${current}`;
+	return {
+		...scene,
+		videoPrompt: replaceNarration(scene.videoPrompt, narration),
+		durationSeconds: durationForWords(wordCount(narration)),
+	};
+}
+
+function replaceNarration(videoPrompt: string, narration: string) {
+	const match = videoPrompt.match(/says,?\s*[“"]([^”"]+)[”"]/di);
+	const bounds = match?.indices?.[1];
+	if (!bounds) return `${videoPrompt} A narrator says, "${narration}"`;
+	return (
+		videoPrompt.slice(0, bounds[0]) + narration + videoPrompt.slice(bounds[1])
+	);
+}
 
 export const explainerSchema = z
 	.object({
@@ -143,7 +189,10 @@ export const explainerSchema = z
 	.transform((explainer) => {
 		const scenes: Scene[] = [];
 		let total = 0;
-		for (const scene of explainer.scenes.slice(0, MAX_SCENES)) {
+		for (const scene of foldShortScenes(explainer.scenes).slice(
+			0,
+			MAX_SCENES,
+		)) {
 			if (
 				scenes.length > 0 &&
 				total + scene.durationSeconds > MAX_TOTAL_SECONDS

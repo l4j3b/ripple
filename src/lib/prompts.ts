@@ -46,7 +46,7 @@ Each scene is rendered as a separate clip with its own audio, then the clips are
 Narration:
 - Natural speech for a smart reader with no finance background. No jargon unless explained in the same breath: words like equities, yields, basis points, soft landing, and risk assets all count as jargon.
 - One or two complete sentences per scene. Never split a sentence across two scenes.
-- Budget at most ${WORDS_PER_SECOND} words per second of scene duration (a 10-second scene is at most ${Math.floor(10 * WORDS_PER_SECOND)} words). Every scene needs at least ${MIN_SCENE_WORDS} words, enough to fill the shortest clip: a shorter line leaves dead air the narrator fills by repeating words. If an idea needs fewer words, merge it into a neighboring scene.
+- Budget at most ${WORDS_PER_SECOND} words per second of scene duration (a 10-second scene is at most ${Math.floor(10 * WORDS_PER_SECOND)} words). Every scene needs at least ${MIN_SCENE_WORDS} words, enough to fill the shortest clip: a shorter line leaves dead air the narrator fills by repeating words. Count the words inside each narration quote. If a sentence is under ${MIN_SCENE_WORDS} words, add a second sentence or merge the idea into a neighboring scene before you reply.
 - Write numbers the way they are spoken: "a quarter point", "three percent", "two billion dollars". Years stay as digits (2026).
 - The narration flows across scenes as one continuous voice and never repeats itself.
 - The narration is burned in as on-screen captions, added to every scene for you. Every word appears on screen, so cut filler.
@@ -114,7 +114,7 @@ Reply with a single JSON object and nothing else: no prose, no markdown, no code
       "beat": "hook | mechanism | impact | uncertainty",
       "visual": "metaphor | graphic",
       "durationSeconds": <integer from ${MIN_SCENE_SECONDS} to ${MAX_SCENE_SECONDS}>,
-      "videoPrompt": "<metaphor only: subject and action, setting, camera, lighting>. Sound: <quiet ambient cue>. A narrator says, \\"<one or two complete sentences within the word budget>\\"",
+      "videoPrompt": "<metaphor only: subject and action, setting, camera, lighting>. Sound: <quiet ambient cue>. A narrator says, \\"<one or two complete sentences, at least ${MIN_SCENE_WORDS} words, within the word budget>\\"",
       "diagram": { "type": "cards | chain | trend | versus | gauge", ...fields for that type } (graphic scenes only)
     }
   ]
