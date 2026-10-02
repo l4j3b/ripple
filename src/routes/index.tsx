@@ -237,21 +237,26 @@ function Home() {
 		<main className="relative flex h-dvh flex-col overflow-hidden">
 			<header
 				className={cn(
-					"shrink-0 overflow-hidden transition-opacity duration-500",
-					hasStarted ? "opacity-100" : "pointer-events-none h-0 opacity-0",
+					"pointer-events-none absolute inset-x-0 top-0 z-20 border-b border-background bg-background/60 backdrop-blur-xl transition-opacity duration-500",
+					hasStarted ? "opacity-100" : "opacity-0",
 				)}
 				inert={!hasStarted}
 			>
 				<div className="flex items-center justify-between px-4 py-3">
 					<button
-						className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 font-semibold text-lg tracking-tight hover:bg-muted"
+						className="pointer-events-auto flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 font-semibold text-lg tracking-tight hover:bg-muted"
 						onClick={startOver}
 						type="button"
 					>
 						<Logo className="size-7" />
 						Ripple
 					</button>
-					<Button onClick={startOver} size="sm" variant="ghost">
+					<Button
+						className="pointer-events-auto"
+						onClick={startOver}
+						size="sm"
+						variant="ghost"
+					>
 						<SquarePenIcon className="size-4" />
 						New Ripple
 					</Button>
@@ -268,7 +273,7 @@ function Home() {
 				>
 					<Conversation>
 						<ConversationAutoscroll nonce={scrollNonce} />
-						<ConversationContent className="mx-auto w-full max-w-3xl pb-8">
+						<ConversationContent className="mx-auto w-full max-w-3xl pt-16 pb-8">
 							{pendingText &&
 								!messages.some((message) => message.role === "user") && (
 									<Message from="user">
