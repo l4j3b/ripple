@@ -108,6 +108,7 @@ function Home() {
 	const [chatOpen, setChatOpen] = useState(false);
 	const [pendingText, setPendingText] = useState<string | null>(null);
 	const [scrollNonce, setScrollNonce] = useState(0);
+	const [showLandingNav, setShowLandingNav] = useState(false);
 	const {
 		messages,
 		sendMessage,
@@ -151,6 +152,16 @@ function Home() {
 	const composerRef = useRef<HTMLDivElement>(null);
 	const landingScrollRef = useRef<HTMLDivElement>(null);
 	const landingSlotRef = useRef<HTMLDivElement>(null);
+	const showNav = hasStarted || showLandingNav;
+
+	useEffect(() => {
+		const root = landingScrollRef.current;
+		if (!root) return;
+		const update = () => setShowLandingNav(root.scrollTop >= 80);
+		update();
+		root.addEventListener("scroll", update, { passive: true });
+		return () => root.removeEventListener("scroll", update);
+	}, []);
 
 	const submit = (text: string) => {
 		const trimmed = text.trim();
@@ -237,29 +248,40 @@ function Home() {
 		<main className="relative flex h-dvh flex-col overflow-hidden">
 			<header
 				className={cn(
-					"pointer-events-none absolute inset-x-0 top-0 z-20 border-b border-background bg-background/60 backdrop-blur-xl transition-opacity duration-500",
-					hasStarted ? "opacity-100" : "opacity-0",
+					"pointer-events-none absolute inset-x-0 top-0 z-20 border-b border-background bg-background/60 backdrop-blur-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+					showNav ? "translate-y-0" : "-translate-y-full",
 				)}
-				inert={!hasStarted}
+				inert={!showNav}
 			>
 				<div className="flex items-center justify-between px-4 py-3">
 					<button
 						className="pointer-events-auto flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 font-semibold text-lg tracking-tight hover:bg-muted"
-						onClick={startOver}
+						onClick={() => {
+							if (hasStarted) {
+								startOver();
+								return;
+							}
+							landingScrollRef.current?.scrollTo({
+								top: 0,
+								behavior: "smooth",
+							});
+						}}
 						type="button"
 					>
 						<Logo className="size-7" />
 						Ripple
 					</button>
-					<Button
-						className="pointer-events-auto"
-						onClick={startOver}
-						size="sm"
-						variant="ghost"
-					>
-						<SquarePenIcon className="size-4" />
-						New Ripple
-					</Button>
+					{hasStarted && (
+						<Button
+							className="pointer-events-auto"
+							onClick={startOver}
+							size="sm"
+							variant="ghost"
+						>
+							<SquarePenIcon className="size-4" />
+							New Ripple
+						</Button>
+					)}
 				</div>
 			</header>
 
