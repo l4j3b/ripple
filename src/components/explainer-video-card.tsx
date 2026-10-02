@@ -11,6 +11,7 @@ import { Suggestion } from "#/components/ai-elements/suggestion";
 import { Spinner } from "#/components/ui/spinner";
 import {
 	type ExplainerVideoInvocation,
+	SCENE_PAD_SECONDS,
 	sceneNarration,
 	VIDEO_ASPECT_RATIO,
 	type VideoAspectRatio,
@@ -131,7 +132,7 @@ export function ExplainerVideoCard({
 			start: elapsed,
 			narration: sceneNarration(scene.videoPrompt),
 		});
-		elapsed += scene.durationSeconds ?? 0;
+		elapsed += (scene.durationSeconds ?? 0) + SCENE_PAD_SECONDS;
 	}
 
 	return (

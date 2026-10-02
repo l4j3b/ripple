@@ -15,6 +15,8 @@ export const WORDS_PER_SECOND = 3.2;
 const NARRATOR_WORDS_PER_SECOND = 3.1;
 const MIN_NARRATOR_WORDS_PER_SECOND = 2.7;
 const CLIP_OVERRUN_SECONDS = 0.4;
+// Held after each clip when scenes are joined, so the last word isn't cut off.
+export const SCENE_PAD_SECONDS = 0.3;
 
 export const MIN_SCENE_WORDS = Math.ceil(
 	MIN_NARRATOR_WORDS_PER_SECOND * (MIN_SCENE_SECONDS + CLIP_OVERRUN_SECONDS),
