@@ -444,24 +444,39 @@ async function fetchArticle(rawUrl: string): Promise<Article> {
 	throw new Error("The page did not include a readable article.");
 }
 
+const PROMPT_TAGS =
+	/<(\/?)(conversation|user|previous_video|source_material|article)\b/gi;
+
+// Keeps pasted or fetched text from opening or closing the tags that frame it
+// in the model prompt.
+export function escapeTags(text: string) {
+	return text.replace(PROMPT_TAGS, "‹$1$2");
+}
+
+function attribute(value: string) {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/"/g, "&quot;")
+		.replace(/</g, "&lt;");
+}
+
 function formatArticle(article: Article) {
-	const paywallNote = article.paywalled
+	const note = article.paywalled
 		? article.text === article.title
-			? "Note: The full article is behind a paywall. Only the headline was available."
-			: "Note: The full article is behind a paywall. Only the headline and a short description were available."
-		: null;
-	return [
-		"Retrieved article",
-		`URL: ${article.url}`,
-		article.title ? `Title: ${article.title}` : null,
-		article.siteName ? `Site: ${article.siteName}` : null,
-		article.published ? `Published: ${article.published}` : null,
-		paywallNote,
-		"",
-		article.text,
-	]
-		.filter((line) => line !== null)
-		.join("\n");
+			? "The full article is behind a paywall. Only the headline was available."
+			: "The full article is behind a paywall. Only the headline and a short description were available."
+		: undefined;
+	const attributes = Object.entries({
+		url: article.url,
+		title: article.title,
+		site: article.siteName,
+		published: article.published,
+		note,
+	})
+		.filter((entry): entry is [string, string] => Boolean(entry[1]))
+		.map(([name, value]) => `${name}="${attribute(value)}"`)
+		.join(" ");
+	return `<article ${attributes}>\n${escapeTags(article.text)}\n</article>`;
 }
 
 async function retrieveOne(url: string) {
@@ -472,7 +487,7 @@ async function retrieveOne(url: string) {
 			error instanceof Error ? error.message : "Could not retrieve this page.";
 		const safe =
 			message.length > 180 ? "Could not retrieve this page." : message;
-		return `Could not retrieve ${url}: ${safe}`;
+		return `<article url="${attribute(url)}" error="${attribute(safe)}" />`;
 	}
 }
 

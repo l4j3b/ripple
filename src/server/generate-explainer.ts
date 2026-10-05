@@ -2,15 +2,16 @@ import { fal } from "@fal-ai/client";
 
 import {
 	type Explainer,
+	type ExplainerInput,
 	type ExplainerPrepStage,
 	type ExplainerUIMessage,
 	explainerSchema,
 	sceneNarration,
 } from "#/lib/explainer";
 import { EXPLAINER_INSTRUCTIONS } from "#/lib/prompts";
-import { retrieveLinkedArticles } from "#/server/retrieve-url";
+import { escapeTags, retrieveLinkedArticles } from "#/server/retrieve-url";
 
-const DEFAULT_MODEL = "anthropic/claude-sonnet-4.5";
+const DEFAULT_MODEL = "anthropic/claude-sonnet-5.5";
 const MAX_ATTEMPTS = 2;
 
 function toTranscript(messages: ExplainerUIMessage[]) {
@@ -20,14 +21,21 @@ function toTranscript(messages: ExplainerUIMessage[]) {
 				const text = message.parts
 					.map((part) => (part.type === "text" ? part.text : ""))
 					.join("");
-				return `User: ${text}`;
+				return `<user>\n${escapeTags(text)}\n</user>`;
 			}
 			const video = message.parts.find(
 				(part) => part.type === "tool-createExplainerVideo" && part.input,
 			);
-			return video && "input" in video
-				? `Ripple (previous video): ${JSON.stringify(video.input)}`
-				: null;
+			if (video?.type !== "tool-createExplainerVideo" || !video.input) {
+				return null;
+			}
+			const { sources, ...plan } = video.input;
+			return [
+				sources ? `<source_material>\n${sources}\n</source_material>` : "",
+				`<previous_video>\n${escapeTags(JSON.stringify(plan))}\n</previous_video>`,
+			]
+				.filter(Boolean)
+				.join("\n\n");
 		})
 		.filter(Boolean)
 		.join("\n\n");
@@ -68,17 +76,16 @@ function parseExplainer(output: string) {
 export async function generateExplainer(
 	messages: ExplainerUIMessage[],
 	onStatus?: (stage: ExplainerPrepStage) => void,
-): Promise<Explainer> {
+): Promise<ExplainerInput> {
 	const latest = latestUserText(messages);
 	if (/\bhttps?:\/\//i.test(latest)) onStatus?.("retrieving");
 	const sources = await retrieveLinkedArticles(latest);
 	onStatus?.("writing");
 	let prompt = [
 		`Today's date: ${new Date().toISOString().slice(0, 10)}.`,
-		"Conversation so far:",
-		toTranscript(messages),
-		sources ? `Source material for the latest message:\n\n${sources}` : "",
-		"Plan the video for the latest user message.",
+		`<conversation>\n${toTranscript(messages)}\n</conversation>`,
+		sources ? `<source_material>\n${sources}\n</source_material>` : "",
+		"Plan the video for the last user message in the conversation.",
 	]
 		.filter(Boolean)
 		.join("\n\n");
@@ -88,6 +95,9 @@ export async function generateExplainer(
 		const { data } = await fal.subscribe("openrouter/router", {
 			input: {
 				model: process.env.LLM_MODEL ?? DEFAULT_MODEL,
+				// Required by newer Claude models; the reasoning comes back
+				// separately, so the output stays plain JSON.
+				reasoning: true,
 				system_prompt: EXPLAINER_INSTRUCTIONS,
 				prompt,
 			},
@@ -99,7 +109,7 @@ export async function generateExplainer(
 		const parsed = parseExplainer(data.output);
 		if (parsed.success) {
 			logScript(parsed.data);
-			return parsed.data;
+			return { ...parsed.data, sources: sources || undefined };
 		}
 		lastError = parsed.error;
 		prompt += `\n\nYour previous reply could not be used (${lastError}). Reply again with only the JSON object.`;

@@ -21,6 +21,7 @@ export const SCENE_PAD_SECONDS = 0.3;
 export const MIN_SCENE_WORDS = Math.ceil(
 	MIN_NARRATOR_WORDS_PER_SECOND * (MIN_SCENE_SECONDS + CLIP_OVERRUN_SECONDS),
 );
+export const MAX_SCENE_WORDS = Math.floor(MAX_SCENE_SECONDS * WORDS_PER_SECOND);
 
 function wordCount(text: string) {
 	return text.split(/\s+/).filter(Boolean).length;
@@ -36,7 +37,7 @@ function durationForWords(words: number) {
 export type VideoAspectRatio = "4:3" | "16:9";
 export const VIDEO_ASPECT_RATIO: VideoAspectRatio = "4:3";
 
-export const VIDEO_LOOKS = ["cinematic", "animated"] as const;
+export const VIDEO_LOOKS = ["cinematic"] as const;
 export const SCENE_VISUALS = ["metaphor", "graphic"] as const;
 export const DIAGRAM_TYPES = [
 	"cards",
@@ -189,20 +190,22 @@ export const explainerSchema = z
 		scenes: z.array(sceneSchema).min(1),
 	})
 	.transform((explainer) => {
+		// If the plan runs over, cut from the middle rather than the end, so the
+		// closing scene with the caveat and what to watch always survives.
+		const planned = foldShortScenes(explainer.scenes);
+		const closing = planned.at(-1) as Scene;
 		const scenes: Scene[] = [];
-		let total = 0;
-		for (const scene of foldShortScenes(explainer.scenes).slice(
-			0,
-			MAX_SCENES,
-		)) {
+		let total = closing.durationSeconds;
+		for (const scene of planned.slice(0, -1)) {
 			if (
-				scenes.length > 0 &&
+				scenes.length + 2 > MAX_SCENES ||
 				total + scene.durationSeconds > MAX_TOTAL_SECONDS
 			)
 				break;
 			scenes.push(scene);
 			total += scene.durationSeconds;
 		}
+		scenes.push(closing);
 		const followUps = (explainer.followUps ?? [])
 			.map((question) => question.trim())
 			.filter(Boolean)
@@ -211,9 +214,6 @@ export const explainerSchema = z
 	});
 
 export type Explainer = z.infer<typeof explainerSchema>;
-
-const ANIMATED_STYLE =
-	"Stylized 3D isometric animation: a miniature world on a floating tile, soft clay-like materials, rounded shapes, soft studio lighting, slow orbiting camera.";
 
 const GRAPHIC_STYLE =
 	"Clean flat 2D motion graphic in a modern explainer style, on a dark navy background (#0B1220) with a faint grid. Teal (#2DD4BF) and purple (#8B5CF6) accents, bold white uppercase sans-serif labels. Smooth eased animation. The bottom quarter of the frame stays empty.";
@@ -385,9 +385,6 @@ function sceneBody(scene: Scene) {
 
 function sceneStyle(explainer: Explainer, scene: Scene) {
 	if (scene.visual === "graphic") return GRAPHIC_STYLE;
-	if (explainer.look === "animated") {
-		return `${ANIMATED_STYLE} ${explainer.styleBible}`;
-	}
 	return explainer.styleBible;
 }
 
@@ -420,9 +417,15 @@ export type ExplainerProgress = {
 
 export type ExplainerPrepStage = "retrieving" | "writing";
 
+export type ExplainerInput = Explainer & {
+	// Articles retrieved for this turn, sent back with later turns so
+	// follow-ups stay grounded in the original reporting.
+	sources?: string;
+};
+
 export type ExplainerUITools = {
 	createExplainerVideo: {
-		input: Explainer;
+		input: ExplainerInput;
 		output: { videoUrl?: string; progress?: ExplainerProgress };
 	};
 };
