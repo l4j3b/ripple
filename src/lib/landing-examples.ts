@@ -24,77 +24,66 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 	{
 		label: "Fed raises rates a quarter point",
 		prompt: "Fed raises rates a quarter point in first move of Warsh era",
-		poster: "/examples/fed.jpg?v=2",
-		invocation: example("example-fed", "/examples/fed.mp4?v=2", {
+		poster: "/examples/fed.jpg?v=3",
+		invocation: example("example-fed", "/examples/fed.mp4?v=3", {
 			analysis:
-				"The Federal Reserve has raised interest rates by 0.25 percentage points, marking the first policy move under a new Fed chair (Warsh). This reverses the recent easing cycle and signals concern about economic overheating or inflation. A rate hike makes borrowing more expensive across the economy: mortgages, business loans, and credit cards all become costlier. This typically slows consumer spending and business investment, cooling demand. Bonds sell off because their fixed payments are worth less when new bonds offer higher yields, and the dollar strengthens as higher rates attract foreign capital. Stocks often fall, especially growth stocks whose distant future earnings are discounted more steeply at higher rates. The timing matters: if this comes after months of cuts, it suggests the Fed misjudged how much easing the economy needed, or new data forced a reversal. The key uncertainty is whether this is a one-time correction or the start of a tightening cycle. If inflation proves stubborn or growth stays strong, more hikes could follow. If data weakens, the Fed could pause or even cut again. The user provided only a headline with no article text, so details like the reason for the hike, the vote breakdown, and forward guidance are unknown.",
+				"The Fed raised its key interest rate by a quarter point, and the headline calls it the first move of the 'Warsh era'. Only the headline was provided, so the reasons for the move, the vote, any forward guidance and the market reaction are unknown. The usual chain is: a higher policy rate makes bank lending costlier, which pushes up mortgage, car loan and business borrowing costs and tends to cool spending and price increases. Savers and holders of cash-like accounts tend to gain, while borrowers, especially those with adjustable-rate debt, and rate-sensitive sectors like housing lose, mostly over the coming months. Stock and bond prices can adjust because future profits are worth less when money costs more. The strongest competing view is that a quarter point is small and may already have been expected, so the real market driver is the Fed's signal about what comes next. This view would be wrong if the move surprised traders or came with unexpectedly firm guidance, in which case the reaction could be larger.",
 			metaphor:
-				"a large valve on a pipeline being turned clockwise to restrict the flow of water",
+				"A concrete dam whose sluice gates are lowered slightly, narrowing the flow of water the way a rate hike narrows the flow of borrowed money.",
 			recurringElements: [
-				"a large steel valve wheel with six spokes, weathered grey metal, mounted on a thick industrial pipeline",
-				"a gloved hand gripping one spoke of the valve wheel, turning it clockwise",
-				"a concrete pipeline painted industrial grey, two meters in diameter, stretching into the distance",
+				"a grey concrete dam with three steel sluice gates, water pouring through the gap beneath each gate into a wide river channel",
 			],
 			look: "cinematic",
 			styleBible:
-				"35mm film stock, shallow depth of field, cool desaturated palette with grey concrete and steel, overcast daylight with soft shadows, industrial and utilitarian",
-			title: "Fed raises rates for the first time under new leadership",
+				"Photographic cinematic footage, shot on a full-frame camera with a 35mm lens and subtle film grain. Muted palette of slate grey, steel blue and soft green with warm highlights. Soft natural overcast daylight, calm and measured mood, shallow depth of field where people appear.",
+			title: "What a quarter-point Fed rate hike means",
 			takeaway:
-				"The Fed's quarter-point rate hike makes borrowing more expensive, slowing spending and investment while strengthening the dollar and pressuring stocks and bonds.",
-			totalSeconds: 32,
+				"A quarter-point rate hike narrows the flow of cheap borrowing, and what the Fed signals next may matter more than the move itself.",
+			totalSeconds: 56,
 			followUps: [
-				"Why would the Fed raise rates after cutting them?",
-				"How does a rate hike affect mortgage payments?",
-				"What happens to the dollar when rates go up?",
+				"How does a Fed rate hike affect mortgage rates?",
+				"Why do higher rates push bond prices down?",
+				"What is forward guidance and why do markets watch it?",
 			],
 			scenes: [
 				{
 					beat: "hook",
 					visual: "metaphor",
-					durationSeconds: 7,
+					durationSeconds: 12,
 					videoPrompt:
-						'a gloved hand gripping one spoke of the valve wheel, turning it clockwise begins turning the large steel valve wheel with six spokes, weathered grey metal, mounted on a thick industrial pipeline clockwise, tightening it by a quarter turn. The concrete pipeline painted industrial grey, two meters in diameter, stretching into the distance sits against an overcast sky. The camera holds steady on the valve from a low angle. Sound: metallic creaking and the distant hum of machinery. A narrator says, "The Federal Reserve just raised interest rates by a quarter point, the first move under new Fed leadership, reversing months of rate cuts."',
+						'A grey concrete dam with three steel sluice gates, water pouring through the gap beneath each gate into a wide river channel. [0-6 seconds] The middle gate lowers by a small step. [6-12 seconds] The stream beneath that gate thins while the other two keep flowing. The camera holds a steady wide shot from the riverbank. Soft overcast daylight. Sound: rushing water and a low mechanical groan of the gate. A narrator says, "The Fed raised its key interest rate by a quarter point, the first move of what the headline calls the Warsh era. It is a small step, but it makes borrowing money a little more expensive across the economy."',
 				},
 				{
 					beat: "mechanism",
 					visual: "metaphor",
-					durationSeconds: 7,
+					durationSeconds: 12,
 					videoPrompt:
-						'[0-5 seconds] Water flowing through the concrete pipeline painted industrial grey, two meters in diameter, stretching into the distance visibly slows as the large steel valve wheel with six spokes, weathered grey metal, mounted on a thick industrial pipeline restricts the opening. [5-12 seconds] The flow continues to narrow, the stream thinning inside the pipe. The camera tracks alongside the pipeline at walking pace. Sound: rushing water fading to a slower trickle. A narrator says, "A rate hike makes borrowing more expensive, so money flows more slowly through the economy as households and businesses pull back on loans."',
+						'A grey concrete dam with three steel sluice gates, water pouring through the gap beneath each gate into a wide river channel. [0-6 seconds] All three gates lower together, narrowing each gap. [6-12 seconds] The water spilling into the channel below slows to a thinner, calmer stream. The camera slowly pushes in from the downstream side. Soft overcast daylight. Sound: rushing water easing to a gentler trickle. A narrator says, "Think of the rate as a set of gates on a dam: raising it narrows the gates, so less borrowed money flows to mortgages, car loans and business investment. Slower flow cools spending and, over time, price increases."',
 				},
 				{
-					beat: "impact",
+					beat: "mechanism",
 					visual: "graphic",
-					durationSeconds: 8,
+					durationSeconds: 9,
 					videoPrompt:
-						'Sound: subtle whoosh as cards appear. A narrator says, "Bond prices fall because their fixed payments lose value when new bonds offer higher rates, and the dollar strengthens as higher rates pull in foreign money."',
+						'Sound: a soft whoosh as each step appears. A narrator says, "In short, a higher rate makes loans costlier, which gives households and firms a reason to spend less. That is the usual way the Fed tries to slow price increases."',
 					diagram: {
-						type: "cards",
-						cards: [
-							{
-								label: "BOND PRICES",
-								direction: "down",
-							},
-							{
-								label: "THE DOLLAR",
-								direction: "up",
-							},
-						],
+						type: "chain",
+						steps: ["RATE HIKE", "COSTLIER LOANS", "SLOWER SPENDING"],
 					},
 				},
 				{
 					beat: "impact",
 					visual: "metaphor",
-					durationSeconds: 5,
+					durationSeconds: 11,
 					videoPrompt:
-						'The large steel valve wheel with six spokes, weathered grey metal, mounted on a thick industrial pipeline now turned tighter, with the concrete pipeline painted industrial grey, two meters in diameter, stretching into the distance carrying only a thin stream of water. The overcast sky grows darker. The camera tilts up from the valve to the grey clouds. Sound: wind and distant industrial hum. A narrator says, "Stocks typically drop, especially growth companies whose future earnings are worth less when rates are higher."',
+						'A couple in plain jackets, seen from behind, carry a plain cardboard box up the front path of a two-storey brick house on a quiet suburban street. [0-5 seconds] They walk up the path past a small front garden. [5-11 seconds] They continue toward the front door of the house. The camera tracks slowly behind them at walking pace. Soft overcast daylight. Sound: footsteps on pavement and distant birdsong. A narrator says, "Savers can earn a bit more, while borrowers such as home buyers and companies with adjustable loans face higher costs. Stocks and bonds often adjust too, since future profits are worth less when money costs more."',
 				},
 				{
 					beat: "uncertainty",
 					visual: "metaphor",
-					durationSeconds: 5,
+					durationSeconds: 12,
 					videoPrompt:
-						'a gloved hand gripping one spoke of the valve wheel, turning it clockwise rests on the large steel valve wheel with six spokes, weathered grey metal, mounted on a thick industrial pipeline, still. The concrete pipeline painted industrial grey, two meters in diameter, stretching into the distance fades into mist. The camera slowly pulls back. Sound: quiet wind and faint dripping water. A narrator says, "The big question is whether this is a one-time move or the start of more hikes to come."',
+						'A grey concrete dam with three steel sluice gates, water pouring through the gap beneath each gate into a wide river channel. [0-6 seconds] Seen from downstream, the water keeps flowing steadily through all three gaps, the middle gap slightly narrower. [6-12 seconds] The camera slowly pulls back to reveal the whole dam and the river stretching beyond it. Soft overcast daylight with a thin mist over the water. Sound: steady rushing water and distant wind. A narrator says, "We only have the headline, so the reasons for the move and any signal about future hikes are unknown. Markets may have expected a quarter point already, which would make the Fed\'s next hint matter more than the move."',
 				},
 			],
 		}),
@@ -103,76 +92,72 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "Retail sales surge the most since March",
 		prompt:
 			"Retail sales last month surged by the most since March, when a spike in gasoline prices and a boost from tax refunds helped account for higher spending totals.",
-		poster: "/examples/retail.jpg?v=2",
-		invocation: example("example-retail", "/examples/retail.mp4?v=2", {
+		poster: "/examples/retail.jpg?v=3",
+		invocation: example("example-retail", "/examples/retail.mp4?v=3", {
 			analysis:
-				"Retail sales surged last month by the most since March 2026. That March spike was driven by higher gasoline prices and tax refund timing, not underlying demand strength. This latest surge suggests consumer spending remains robust even without those temporary boosts. Strong consumption supports corporate revenues and employment, which reduces recession risk and tends to lift equities. The main competing view is that the surge reflects inflation or pulled-forward purchases rather than sustained demand growth. What would make this view wrong: if the next month's data shows a sharp reversal, indicating the surge was one-time rather than a trend shift.",
+				"The excerpt says retail sales, the total spent in stores and online, rose last month by the most since March. It gives no figure for the jump, and it does not say what drove last month's increase. It says only that March's surge was helped by a spike in gasoline prices and a boost from tax refunds. The mechanism is that retail sales are measured in dollars, so a total can rise because people buy more, because things cost more, or because households have extra cash such as refunds. Consumer spending is a large part of the economy, so a strong reading can support growth and company sales. It could also keep price pressure alive and make central banks more cautious about cutting rates, though that is a likely effect and not a certainty. The strongest competing reading is that the jump is mostly a price effect and not real demand. That view would be wrong if sales excluding gasoline, adjusted for inflation, also rose strongly. Those breakdowns are not in the text provided, so the quality of the surge is unknown.",
 			metaphor:
-				"a wide river flowing steadily through a landscape, representing consumer spending moving through the economy",
-			recurringElements: [
-				"a wide river with clear blue-green water flowing steadily from left to right across the frame",
-				"a patchwork landscape of green fields and brown industrial areas along both riverbanks",
-			],
+				"A stream turning a mill wheel: the faster the water, the faster the wheel, but a swollen stream can hide whether there is more water or just a surge.",
+			recurringElements: [],
 			look: "cinematic",
 			styleBible:
-				"35mm photographic style with natural color grading, cool blue-greens in the water and warm earth tones in the landscape, soft overcast daylight creating even illumination, shallow depth of field isolating the river in the foreground",
-			title: "Retail sales surge in September as consumers keep spending",
+				"Photographic cinematic footage, 35mm film feel, shallow depth of field, natural muted palette of warm stone, weathered wood and cool green-blue water, soft overcast daylight with gentle highlights, calm and unhurried mood.",
+			title: "Retail sales jump: real demand or higher prices?",
 			takeaway:
-				"Strong consumer spending reduces recession risk and supports stocks when it reflects genuine demand rather than temporary price spikes.",
-			totalSeconds: 32,
+				"A big jump in retail sales is only half the story until you know whether people bought more or things just cost more.",
+			totalSeconds: 50,
 			followUps: [
-				"Why do tax refunds boost spending temporarily?",
-				"How do retailers respond when sales surge unexpectedly?",
-				"What happens if next month's sales drop sharply?",
+				"What is the difference between nominal and real retail sales?",
+				"Why do central banks watch consumer spending?",
+				"How do gasoline prices affect inflation readings?",
 			],
 			scenes: [
 				{
 					beat: "hook",
 					visual: "metaphor",
-					durationSeconds: 8,
+					durationSeconds: 9,
 					videoPrompt:
-						'A wide river with clear blue-green water flowing steadily from left to right across the frame, moving through a patchwork landscape of green fields and brown industrial areas along both riverbanks. The river is wide and full, its surface rippling with strong current. The camera glides slowly alongside the river at a low angle, following the flow. Soft overcast daylight creates even illumination. Sound: gentle rushing water and distant wind. A narrator says, "Retail sales surged last month by the most since March, signaling that consumers are still spending even without help from gas price spikes or tax refunds."',
+						'A weathered wooden water wheel on an old grey stone mill turns faster as a stream rushes against its paddles, spray flying off the boards. The camera holds a steady medium shot from the bank. Soft overcast daylight. Sound: rushing water and the creak of turning wood. A narrator says, "Retail sales, the total spent in stores and online, surged last month by the most since March. It is a quick read on whether shoppers are still driving the economy."',
 				},
 				{
 					beat: "mechanism",
 					visual: "metaphor",
-					durationSeconds: 6,
+					durationSeconds: 11,
 					videoPrompt:
-						'[0-6 seconds] A wide river with clear blue-green water flowing steadily from left to right across the frame, moving through a patchwork landscape of green fields and brown industrial areas along both riverbanks. The water spreads outward, fanning into shallow channels that reach the fields and industrial areas on both banks. [6-12 seconds] The channels continue spreading, reaching deeper into the landscape as the river feeds more territory. The camera pulls back slowly to reveal the branching network of water. Soft overcast daylight creates even illumination. Sound: water flowing over smooth stones. A narrator says, "When shoppers spend more, that money flows to businesses as revenue, which supports hiring and investment across the economy."',
+						"[0-5 seconds] A silver sedan pulls up beside a fuel pump at a quiet station, seen from behind, the pump's display side facing away from the camera. [5-11 seconds] A hand slides the nozzle into the car's fuel inlet and squeezes the handle as the car sits at the pump. The camera makes a slow push-in from behind the car. Soft overcast daylight. Sound: idling engine and the click and hum of a fuel pump. A narrator says, \"We have no figure for the jump, so its size is unknown. What we do know is that March's surge was helped by a spike in gasoline prices and a boost from tax refunds.\"",
 				},
 				{
-					beat: "impact",
+					beat: "mechanism",
 					visual: "graphic",
-					durationSeconds: 5,
+					durationSeconds: 9,
 					videoPrompt:
-						'Sound: soft upward whoosh. A narrator says, "Strong spending supports business revenues and jobs, which lifts stocks and eases fears of a recession."',
+						'Sound: a soft whoosh as each step appears. A narrator says, "When gasoline costs more, the same fill-up adds more dollars to the total. Tax refunds hand households extra cash to spend, which lifts the total in a different way."',
 					diagram: {
-						type: "cards",
-						cards: [
-							{
-								label: "STOCKS",
-								direction: "up",
-							},
-							{
-								label: "RECESSION RISK",
-								direction: "down",
-							},
+						type: "chain",
+						steps: [
+							"HIGHER PRICES",
+							"MORE DOLLARS SPENT",
+							"BIGGER SALES TOTAL",
 						],
 					},
 				},
 				{
-					beat: "mechanism",
+					beat: "impact",
 					visual: "metaphor",
-					durationSeconds: 7,
+					durationSeconds: 13,
 					videoPrompt:
-						'A wide river with clear blue-green water flowing steadily from left to right across the frame. The surface suddenly roils with whitecaps and choppy waves, the water level appearing slightly higher but turbulent. The camera holds steady at eye level with the river. Soft overcast daylight creates even illumination. Sound: water splashing and gurgling over rocks. A narrator says, "The question is whether the surge reflects genuine demand or just temporary factors like higher prices or shoppers buying earlier than usual."',
+						'[0-6 seconds] A busy pedestrian shopping street with plain unmarked glass storefronts, shoppers carrying paper-free cloth bags walking away from the camera at a distance. [6-13 seconds] The crowd thickens as more shoppers stream along the same street and pass in and out of the shops. The camera tracks slowly forward at shoulder height. Soft warm afternoon light. Sound: footsteps, quiet chatter and distant traffic. A narrator says, "Consumer spending is a large part of the economy, so a strong reading can support growth. It can also keep prices rising and make central banks cautious about cutting interest rates, though that is a likely effect, not a certainty."',
 				},
 				{
 					beat: "uncertainty",
-					visual: "metaphor",
-					durationSeconds: 6,
+					visual: "graphic",
+					durationSeconds: 8,
 					videoPrompt:
-						'A wide river with clear blue-green water flowing steadily from left to right across the frame, moving through a patchwork landscape of green fields and brown industrial areas along both riverbanks. The camera slowly pushes forward along the river, following its path into the distance where it curves out of sight. Soft overcast daylight creates even illumination. Sound: steady flowing water fading into the distance. A narrator says, "Next month\'s data will show whether this surge marks a lasting shift or a one-time spike that reverses quickly."',
+						'Sound: a soft whoosh as each step appears. A narrator says, "The headline total can mislead, because price jumps inflate it. A better test is sales excluding gasoline, adjusted for inflation, to see whether people truly bought more."',
+					diagram: {
+						type: "chain",
+						steps: ["REMOVE GAS", "ADJUST FOR PRICES", "TRUE DEMAND"],
+					},
 				},
 			],
 		}),
@@ -181,76 +166,72 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "EU floats associate membership for Canada",
 		prompt:
 			"EU chief floats associate membership for Canada after U.S. trade attacks",
-		poster: "/examples/eu-canada.jpg?v=2",
-		invocation: example("example-eu-canada", "/examples/eu-canada.mp4?v=2", {
+		poster: "/examples/eu-canada.jpg?v=3",
+		invocation: example("example-eu-canada", "/examples/eu-canada.mp4?v=3", {
 			analysis:
-				'The headline suggests the EU is considering some form of associate membership for Canada, apparently in response to U.S. trade attacks. Without the article text, I cannot determine what "trade attacks" means, when they occurred, what associate membership would entail, or who in the EU proposed this. The market implications depend entirely on those details: whether this is a formal trade pact, a political signal, or exploratory talk, and whether it would lower tariffs, create regulatory alignment, or simply coordinate against U.S. measures. Associate membership could strengthen the euro and Canadian dollar if it deepens trade ties, but the impact on equities, bonds, and commodities depends on which sectors gain market access and what reciprocal obligations Canada accepts. The strongest competing view is that this is a rhetorical response with no near-term trade effect. I cannot analyze transmission chains, affected assets, or timeframes without knowing what was actually proposed and under what circumstances.',
+				"Only the headline was available, so the rest of the reporting could not be read. The headline says the head of the European Union floated associate membership for Canada after trade attacks from the United States. The likely logic is that if those attacks are tariffs, which are taxes on imports, Canadian goods become pricier for American buyers, and Canada has more reason to diversify toward other large customers such as Europe. Canadian exporters and European companies could gain over years from easier access, while American sellers could lose ground in Canada. The strongest competing view is that this is mostly a political signal. A floated idea is not an offer, and the terms of associate status are unknown, so it may change little in practice. The view would be wrong if talks stall, if the status turns out to be mostly symbolic, or if the U.S. trade dispute is resolved. Markets would react to concrete terms and to Washington's response, not to the idea itself.",
 			metaphor:
-				"two harbors, one representing the EU and one representing Canada, with a new shipping lane opening between them while a third harbor (the U.S.) imposes barriers",
+				"A highway border crossing where trucks queue at a lowered barrier on one lane, while a second lane's barrier opens toward a new road.",
 			recurringElements: [
-				"a large European harbor with grey stone quays and red-roofed warehouses, viewed from the water",
-				"a Canadian harbor with wooden piers and dark green forested hills behind it, viewed from the water",
-				"a U.S. harbor with tall modern cranes and blue shipping containers stacked high, viewed from the water",
-				"container ships in red, white, and blue livery moving between the harbors",
+				"a line of plain white box trucks with no markings, seen from behind, on a wide grey highway",
+				"a wide highway border checkpoint with a red and white striped barrier arm across the lane and a small grey booth",
 			],
 			look: "cinematic",
 			styleBible:
-				"Wide-angle documentary photography, 35mm film grain, desaturated coastal palette of grey stone, deep blue water, and muted reds and greens, soft overcast daylight",
-			title:
-				"EU floats associate membership for Canada after U.S. trade attacks",
+				"Photographic cinematic footage, 35mm lens, subtle film grain, shallow depth of field, muted blue-grey and amber palette, soft overcast daylight with gentle warm highlights, calm and observational mood.",
+			title: "Europe floats associate membership for Canada",
 			takeaway:
-				"The EU is exploring closer ties with Canada in response to U.S. trade measures, but the article details needed to assess market impact are unavailable.",
-			totalSeconds: 23,
+				"An associate membership offer is only an idea so far, but it shows how trade pressure from one partner can push a country to seek closer ties elsewhere.",
+			totalSeconds: 49,
 			followUps: [
-				"What is EU associate membership?",
-				"How would this affect the Canadian dollar?",
-				"What U.S. trade measures prompted this?",
+				"What are tariffs and who pays them?",
+				"Why would countries diversify their trade partners?",
+				"How do trade disputes affect stock markets?",
 			],
 			scenes: [
 				{
 					beat: "hook",
 					visual: "metaphor",
-					durationSeconds: 5,
+					durationSeconds: 11,
 					videoPrompt:
-						'a large European harbor with grey stone quays and red-roofed warehouses, viewed from the water and a Canadian harbor with wooden piers and dark green forested hills behind it, viewed from the water, separated by open water. A single container ship in red, white, and blue livery begins moving from the European harbor toward the Canadian harbor, leaving a white wake. Wide shot from above the water, camera slowly panning right to follow the ship. Soft overcast daylight. Sound: distant foghorn and gentle water lapping. A narrator says, "The EU is floating the idea of associate membership for Canada, a response to recent U.S. trade attacks."',
+						'A line of plain white box trucks with no markings, seen from behind, on a wide grey highway, waits at a wide highway border checkpoint with a red and white striped barrier arm across the lane and a small grey booth. [0-5 seconds] The trucks idle in a queue before the lowered barrier arm. [5-11 seconds] The last truck pulls out of the line and turns onto a side road leading away. The camera holds steady at a low angle behind the queue. Soft overcast daylight. Sound: low diesel engine idle and distant wind. A narrator says, "The head of the European Union has floated the idea of associate membership for Canada, following trade attacks from the United States. Only the headline was available, so the details of the offer are unknown."',
+				},
+				{
+					beat: "mechanism",
+					visual: "graphic",
+					durationSeconds: 10,
+					videoPrompt:
+						'Sound: a soft whoosh as each step appears. A narrator says, "If those attacks are tariffs, meaning taxes on imports, Canadian goods get pricier for American buyers. That gives Canada a reason to seek other customers, and Europe is a large one."',
+					diagram: {
+						type: "chain",
+						steps: ["U.S. TARIFFS", "COSTLIER EXPORTS", "NEW BUYERS"],
+					},
 				},
 				{
 					beat: "mechanism",
 					visual: "metaphor",
-					durationSeconds: 6,
+					durationSeconds: 9,
 					videoPrompt:
-						'[0-6 seconds] a U.S. harbor with tall modern cranes and blue shipping containers stacked high, viewed from the water. Steel barriers rise at the mouth of the harbor, blocking entry. [6-12 seconds] Container ships in red, white, and blue livery that were heading toward the U.S. harbor turn away and begin moving toward the open water between the European and Canadian harbors. Wide shot from the side, camera slowly pulling back. Soft overcast daylight. Sound: low metallic clang as barriers rise, then quiet engine hum. A narrator says, "The headline refers to U.S. trade attacks, but the article itself could not be retrieved, so the specifics are unknown."',
+						'A line of plain white box trucks with no markings, seen from behind, on a wide grey highway, approaches a second lane at a wide highway border checkpoint with a red and white striped barrier arm across the lane and a small grey booth, where the barrier arm slowly lifts partway and stops half raised. The camera slowly pushes forward at truck height. Soft overcast daylight. Sound: a mechanical hum of the barrier arm and quiet engines. A narrator says, "Associate membership can mean partial benefits, like easier trade access, without full membership. What it would include here is not stated, so it could be a little or a lot."',
+				},
+				{
+					beat: "impact",
+					visual: "metaphor",
+					durationSeconds: 11,
+					videoPrompt:
+						'A tall dockside crane lifts a plain blue shipping container with no markings onto a large cargo ship at a busy container port. [0-5 seconds] The crane lifts the container from a stack of plain colored containers. [5-11 seconds] The container settles onto the ship\'s deck as the crane swings back. The camera slowly tracks sideways along the quay. Warm late-afternoon light through light haze. Sound: distant clanking of steel and gulls over water. A narrator says, "If a deal took shape, Canadian exporters could gain new buyers and European companies easier access to Canada. Over time, American sellers could lose ground in Canada, though that would take years, not days."',
 				},
 				{
 					beat: "uncertainty",
 					visual: "graphic",
-					durationSeconds: 5,
+					durationSeconds: 8,
 					videoPrompt:
-						'Sound: soft whoosh as elements appear. A narrator says, "Without knowing what was proposed or what prompted it, we cannot assess how markets would react."',
+						'Sound: a soft whoosh as the gauge moves. A narrator says, "A floated idea is not a deal, and it would need agreement from both sides. Watch for what the status would cover and how Washington responds."',
 					diagram: {
-						type: "cards",
-						cards: [
-							{
-								label: "TRADE TERMS",
-								direction: "flat",
-							},
-							{
-								label: "CURRENCY IMPACT",
-								direction: "flat",
-							},
-							{
-								label: "SECTOR EFFECTS",
-								direction: "flat",
-							},
-						],
+						type: "gauge",
+						label: "UNCERTAINTY",
+						direction: "up",
 					},
-				},
-				{
-					beat: "uncertainty",
-					visual: "metaphor",
-					durationSeconds: 7,
-					videoPrompt:
-						'a new wide shipping lane marked by floating buoys opening between a large European harbor with grey stone quays and red-roofed warehouses, viewed from the water and a Canadian harbor with wooden piers and dark green forested hills behind it, viewed from the water. Container ships in red, white, and blue livery are visible in the distance but not yet entering the lane. The water is calm. Wide shot from above, camera slowly descending toward the water. Soft overcast daylight. Sound: quiet water and distant seabirds. A narrator says, "If this becomes a formal pact lowering trade barriers, it could strengthen ties and currencies, but for now it is only a proposal."',
 				},
 			],
 		}),
@@ -259,99 +240,66 @@ export const LANDING_EXAMPLES: LandingExample[] = [
 		label: "Why companies won't pause on AI (WSJ)",
 		prompt:
 			"https://www.wsj.com/cio-journal/why-companies-are-unlikely-to-hit-pause-on-ai-9a4f6818",
-		poster: "/examples/ai-pause.jpg?v=2",
-		invocation: example("example-ai-pause", "/examples/ai-pause.mp4?v=2", {
+		poster: "/examples/ai-pause.jpg?v=3",
+		invocation: example("example-ai-pause", "/examples/ai-pause.mp4?v=3", {
 			analysis:
-				"The headline states that companies are unlikely to pause AI investments. The full article could not be read, so the mechanism must be inferred from general market dynamics. Companies continue AI spending because they see it as a competitive necessity: stopping would mean falling behind rivals who keep building. This creates a prisoner's dilemma where no firm can afford to be the one that stops, even if returns are uncertain. For markets, this means sustained demand for AI infrastructure (chips, cloud services, data centers) and continued capex from tech firms and enterprises. Winners are semiconductor companies, cloud providers, and AI software firms. Losers are firms that underinvest and lose market share, or those overextended on AI bets that fail to pay off. The risk is that collective overspending leads to a correction if returns disappoint, but the coordination problem makes a voluntary pause unlikely. The competing view is that companies will slow spending as capital discipline returns, especially if interest rates stay high or earnings pressure mounts. This view would be wrong if competitive pressure remains stronger than financial discipline, which the headline suggests is the case.",
+				"Only the headline was available, because the full article is behind a paywall, so this analysis uses general market logic and not the article's own reporting. The headline says companies are unlikely to pause their AI efforts. A general mechanism that fits is competition: if rivals keep investing, a firm that stops risks falling behind, so each company's spending raises pressure on the others to match it. If spending continues, makers of chips and operators of data centers could see steady demand, while the buying companies carry the cost now and wait for benefits that may come later. That is a likely reading, not a known fact, and the article's actual reasons could differ. The strongest competing view is that spending is not immune to pressure: if returns disappoint or borrowing gets more expensive, even determined companies could slow down. Without the full text, we cannot say which risks the article stresses.",
 			metaphor:
-				"a construction site where multiple buildings rise side by side, each builder racing to finish first",
+				"A pack of cyclists on a road: stopping pedaling means dropping out of the pack, and a steeper climb tests who can keep going.",
 			recurringElements: [
-				"a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible",
-				"construction workers in yellow hard hats and orange vests, seen from behind or at a distance, moving quickly between floors",
+				"A tight pack of cyclists in plain grey jerseys and black helmets on slim silver road bikes, seen from behind",
 			],
 			look: "cinematic",
 			styleBible:
-				"Documentary realism, shot on 35mm film with a 50mm lens, natural daylight with soft shadows, color palette of steel grays, construction oranges, and concrete whites, slightly desaturated for a neutral informative tone",
-			title: "Why companies won't pause AI spending",
+				"Photographic cinematic footage, 35mm film look, shallow depth of field, natural muted colors of steel blue, grey and soft green with warm highlights, soft overcast daylight, calm and steady mood, no text anywhere in frame.",
+			title: "Why companies keep investing in AI",
 			takeaway:
-				"Companies keep investing in AI because stopping would mean falling behind competitors who continue building.",
-			totalSeconds: 40,
+				"Competition makes it hard for any one company to stop spending on AI, but disappointing returns or costly borrowing could change that.",
+			totalSeconds: 50,
 			followUps: [
-				"What happens if AI spending doesn't pay off?",
-				"Which companies benefit most from this AI arms race?",
-				"Could high interest rates force companies to slow down?",
+				"Why do chipmakers benefit when AI spending continues?",
+				"What is a data center and why does AI need so many?",
+				"How could higher borrowing costs slow down AI spending?",
 			],
 			scenes: [
 				{
 					beat: "hook",
 					visual: "metaphor",
-					durationSeconds: 5,
+					durationSeconds: 10,
 					videoPrompt:
-						'a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible. Construction workers in yellow hard hats and orange vests, seen from behind or at a distance, moving quickly between floors. Camera slowly pulls back to reveal the scale of all three towers. Sound: rhythmic hammering and distant crane motors. A narrator says, "Companies are not slowing down their AI investments, even as costs pile up and returns remain uncertain."',
+						'A tight pack of cyclists in plain grey jerseys and black helmets on slim silver road bikes, seen from behind, rides steadily without slowing along a coastal road. The camera tracks smoothly behind the pack at cycling speed. Soft overcast daylight. Sound: whirring wheels and light sea wind.. A narrator says, "A Wall Street Journal headline says companies are unlikely to hit pause on AI. Only the headline could be read, so this explainer uses general market logic, not the article\'s own reporting."',
 				},
 				{
 					beat: "mechanism",
 					visual: "metaphor",
-					durationSeconds: 5,
+					durationSeconds: 9,
 					videoPrompt:
-						'a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible. [0-6 seconds] One tower\'s construction visibly slows, with fewer construction workers in yellow hard hats and orange vests, seen from behind or at a distance, and cranes standing still. [6-12 seconds] The other two towers continue rising rapidly, their cranes lifting new beams into place. Camera pans from the slower tower to the faster ones. Sound: hammering fades on one side, intensifies on the other. A narrator says, "The reason is competitive pressure. If one company slows down, its rivals keep building, and the gap widens."',
+						'A tight pack of cyclists in plain grey jerseys and black helmets on slim silver road bikes, seen from behind, speeds along a road while the last rider eases off and a gap opens behind the pack. The camera tracks from behind the pack. Soft overcast daylight. Sound: whirring wheels and rhythmic breathing. A narrator says, "One basic force is competition. When rivals keep investing, a company that stops risks falling behind, much like a cyclist who eases off and drops out of the pack."',
 				},
 				{
 					beat: "mechanism",
-					visual: "metaphor",
-					durationSeconds: 6,
-					videoPrompt:
-						'a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible. The slowest tower now visibly shorter than the others. Construction workers in yellow hard hats and orange vests, seen from behind or at a distance, look up from the lower tower toward the taller ones. Camera tilts up to emphasize the height difference. Sound: wind whistling through the steel frames. A narrator says, "No firm can afford to be the one that stops, creating a kind of arms race where everyone keeps spending."',
-				},
-				{
-					beat: "impact",
 					visual: "graphic",
-					durationSeconds: 6,
+					durationSeconds: 8,
 					videoPrompt:
-						'Sound: soft upward whoosh as cards appear. A narrator says, "This means sustained demand for AI chips, cloud services, and data centers, all of which continue to see strong investment."',
+						"Sound: a soft whoosh as each step appears. A narrator says, \"Each firm's spending raises the pressure on the next, so one company's investment can push rivals to match it. That feedback makes a coordinated pause unlikely.\"",
 					diagram: {
-						type: "cards",
-						cards: [
-							{
-								label: "AI CHIPS",
-								direction: "up",
-							},
-							{
-								label: "CLOUD SERVICES",
-								direction: "up",
-							},
-							{
-								label: "DATA CENTERS",
-								direction: "up",
-							},
-						],
+						type: "chain",
+						steps: ["RIVAL SPENDING", "MATCHING PRESSURE", "NO PAUSE"],
 					},
 				},
 				{
 					beat: "impact",
 					visual: "metaphor",
-					durationSeconds: 7,
+					durationSeconds: 12,
 					videoPrompt:
-						'a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible. [0-6 seconds] Delivery trucks arrive at the base of each tower, unloading steel beams and materials. [6-12 seconds] Construction workers in yellow hard hats and orange vests, seen from behind or at a distance, carry the materials up into the towers. Camera follows the flow of materials from trucks to towers. Sound: truck engines and metal clanging. A narrator says, "Semiconductor companies, cloud providers, and AI software firms all benefit. Firms that underinvest risk losing market share to those that keep building."',
+						'[0-6 seconds] The camera glides slowly down a wide aisle between tall black server racks in a vast data hall, small green lights flickering on the racks. [6-12 seconds] The camera keeps gliding toward the far end of the hall as cool air haze drifts across the floor. Cool blue-white overhead lighting. Sound: steady hum of cooling fans and servers. A narrator says, "If spending continues, makers of chips and operators of data centers, the warehouses of computers that run AI, could see steady demand. The risk sits with the buyers, who pay now for benefits that may arrive later."',
 				},
 				{
 					beat: "uncertainty",
 					visual: "metaphor",
-					durationSeconds: 6,
+					durationSeconds: 11,
 					videoPrompt:
-						'a construction site with three identical steel-frame towers rising side by side, each at a different stage of completion, scaffolding and cranes visible. The towers now very tall, with cranes still lifting beams, but the ground below is cluttered with unused materials and cost overruns visible in the sprawl. Camera slowly tilts down from the tops of the towers to the cluttered ground. Sound: wind and distant hammering, slightly ominous. A narrator says, "The risk is that collective overspending leads to a correction if the returns on all this investment fail to materialize."',
-				},
-				{
-					beat: "uncertainty",
-					visual: "graphic",
-					durationSeconds: 5,
-					videoPrompt:
-						'Sound: subtle downward tone as gauge needle moves. A narrator says, "Watch for signs of capital discipline returning, especially if earnings pressure mounts or financing costs stay high."',
-					diagram: {
-						type: "gauge",
-						label: "SPENDING DISCIPLINE",
-						direction: "down",
-					},
+						'[0-5 seconds] A tight pack of cyclists in plain grey jerseys and black helmets on slim silver road bikes, seen from behind, begins climbing a road that steepens ahead. [5-11 seconds] The pack stretches out and slows as the climb gets harder, riders still pedaling. The camera tracks from behind at a low angle. Soft overcast daylight. Sound: heavy breathing and slow whirring wheels. A narrator says, "This view would be wrong if returns disappoint or money becomes expensive to borrow, which could force even determined companies to slow down. Without the full article, we cannot say which risks it highlights."',
 				},
 			],
 		}),
