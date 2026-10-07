@@ -59,7 +59,7 @@ export function AsciiBackdrop({
 
 			// Origin on the logo (py-16 + half of size-16).
 			const cx = cols / 2;
-			const cy = 120 / CELL;
+			const cy = 132 / CELL;
 			const t = time * 0.00025;
 			const reach = Math.max(cols * 0.9, rows * 0.85);
 
