@@ -57,9 +57,9 @@ export function AsciiBackdrop({
 			const h = rows * CELL;
 			ctx.clearRect(0, 0, w, h);
 
-			// Origin sits near the hero; rings keep traveling far down the page.
+			// Origin on the logo (py-16 + half of size-16).
 			const cx = cols / 2;
-			const cy = -80;
+			const cy = 120 / CELL;
 			const t = time * 0.00025;
 			const reach = Math.max(cols * 0.9, rows * 0.85);
 
