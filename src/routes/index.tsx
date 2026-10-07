@@ -401,14 +401,15 @@ function Home() {
 					inert={hasStarted}
 					ref={landingScrollRef}
 				>
-					<div
-						aria-hidden="true"
-						className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[180vh] overflow-hidden"
-					>
-						<AsciiBackdrop />
-						<div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,transparent_45%,var(--background)_100%)]" />
-					</div>
-					<div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-16">
+					<div className="relative">
+						<div
+							aria-hidden="true"
+							className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+						>
+							<AsciiBackdrop />
+							<div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,transparent_45%,var(--background)_100%)]" />
+						</div>
+						<div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-16">
 						<div className="flex flex-col items-center text-center">
 							<Logo className="size-16" />
 							<h1 className="-mt-2 font-bold text-4xl tracking-tight sm:text-5xl">
@@ -495,6 +496,7 @@ function Home() {
 								in Sausalito.
 							</p>
 						</footer>
+						</div>
 					</div>
 				</div>
 			</div>
