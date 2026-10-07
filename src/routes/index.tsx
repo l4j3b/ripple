@@ -247,16 +247,6 @@ function Home() {
 
 	return (
 		<main className="relative flex h-dvh flex-col overflow-hidden">
-			<div
-				aria-hidden="true"
-				className={cn(
-					"pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-700",
-					hasStarted ? "opacity-15" : "opacity-55",
-				)}
-			>
-				<AsciiBackdrop />
-				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_28%,transparent_0%,var(--background)_70%)]" />
-			</div>
 			<header
 				className={cn(
 					"pointer-events-none absolute inset-x-0 top-0 z-20 border-b border-background bg-background/60 backdrop-blur-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
@@ -411,7 +401,14 @@ function Home() {
 					inert={hasStarted}
 					ref={landingScrollRef}
 				>
-					<div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-16">
+					<div
+						aria-hidden="true"
+						className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[180vh] overflow-hidden"
+					>
+						<AsciiBackdrop />
+						<div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,transparent_45%,var(--background)_100%)]" />
+					</div>
+					<div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-8 py-16">
 						<div className="flex flex-col items-center text-center">
 							<Logo className="size-16" />
 							<h1 className="-mt-2 font-bold text-4xl tracking-tight sm:text-5xl">

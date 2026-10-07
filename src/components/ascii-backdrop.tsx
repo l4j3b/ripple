@@ -4,7 +4,7 @@ import { cn } from "#/lib/utils";
 
 // Dark → light. Dense glyphs read as the bright ridges of each ripple.
 const GLYPHS = " .:-=+*#%@";
-const CELL = 8;
+const CELL = 9;
 
 type AsciiBackdropProps = {
 	className?: string;
@@ -57,30 +57,34 @@ export function AsciiBackdrop({
 			const h = rows * CELL;
 			ctx.clearRect(0, 0, w, h);
 
+			// Origin sits near the hero; rings keep traveling far down the page.
 			const cx = cols / 2;
-			const cy = rows * 0.36;
-			const t = time * 0.00028;
-			const maxDist = Math.hypot(cx, Math.max(cy, rows - cy)) || 1;
+			const cy = -80;
+			const t = time * 0.00025;
+			const reach = Math.max(cols * 0.9, rows * 0.85);
 
 			for (let y = 0; y < rows; y++) {
 				for (let x = 0; x < cols; x++) {
 					const dx = x - cx;
-					const dy = (y - cy) * 1.2;
+					const dy = (y - cy) * 0.8;
 					const dist = Math.hypot(dx, dy);
-					const ring = 0.55 + 0.45 * Math.sin(dist * 0.48 - t * 4.5);
-					const envelope = Math.exp(-((dist / maxDist) ** 2) * 1.8);
+					const ring = 0.5 + 0.5 * Math.sin(dist * 0.38 - t * 4.2);
+					const envelope = Math.exp(-((dist / reach) ** 2) * 0.85);
 					const hash = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
 					const grain = hash - Math.floor(hash);
 					const v = Math.max(
 						0,
-						Math.min(1, (0.15 + ring * 0.55) * envelope * (0.9 + grain * 0.2)),
+						Math.min(
+							1,
+							(0.2 + ring * 0.75) * envelope * (0.86 + grain * 0.28),
+						),
 					);
 
 					const glyph = GLYPHS[(v * (GLYPHS.length - 1)) | 0];
 					if (glyph === " " || glyph === ".") continue;
 
-					const alpha = 0.04 + v * 0.18;
-					ctx.fillStyle = `rgba(148, 163, 184, ${alpha.toFixed(3)})`;
+					const alpha = 0.14 + v * 0.34;
+					ctx.fillStyle = `rgba(163, 176, 196, ${alpha.toFixed(3)})`;
 					ctx.fillText(glyph, x * CELL + CELL / 2, y * CELL + CELL / 2);
 				}
 			}
