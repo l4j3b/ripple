@@ -29,6 +29,7 @@ import {
 	PromptInputTextarea,
 } from "#/components/ai-elements/prompt-input";
 import { Suggestion } from "#/components/ai-elements/suggestion";
+import { AsciiBackdrop } from "#/components/ascii-backdrop";
 import { ExampleCard } from "#/components/example-card";
 import { ExplainerVideoCard } from "#/components/explainer-video-card";
 import { Logo } from "#/components/logo";
@@ -246,6 +247,16 @@ function Home() {
 
 	return (
 		<main className="relative flex h-dvh flex-col overflow-hidden">
+			<div
+				aria-hidden="true"
+				className={cn(
+					"pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-700",
+					hasStarted ? "opacity-15" : "opacity-55",
+				)}
+			>
+				<AsciiBackdrop />
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_28%,transparent_0%,var(--background)_70%)]" />
+			</div>
 			<header
 				className={cn(
 					"pointer-events-none absolute inset-x-0 top-0 z-20 border-b border-background bg-background/60 backdrop-blur-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
@@ -285,7 +296,7 @@ function Home() {
 				</div>
 			</header>
 
-			<div className="relative min-h-0 flex-1">
+			<div className="relative z-10 min-h-0 flex-1">
 				<div
 					className={cn(
 						"absolute inset-0 flex flex-col transition-opacity duration-500 ease-out",
