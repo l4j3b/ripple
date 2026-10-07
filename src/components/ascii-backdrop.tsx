@@ -61,29 +61,29 @@ export function AsciiBackdrop({
 			const cx = cols / 2;
 			const cy = 132 / CELL;
 			const t = time * 0.00025;
-			const reach = Math.max(cols * 0.9, rows * 0.85);
+			const reach = Math.max(cols * 1.35, rows * 1.2);
 
 			for (let y = 0; y < rows; y++) {
 				for (let x = 0; x < cols; x++) {
 					const dx = x - cx;
 					const dy = (y - cy) * 0.8;
 					const dist = Math.hypot(dx, dy);
-					const ring = 0.5 + 0.5 * Math.sin(dist * 0.38 - t * 4.2);
-					const envelope = Math.exp(-((dist / reach) ** 2) * 0.85);
+					const ring = 0.5 + 0.5 * Math.sin(dist * 0.14 - t * 4.2);
+					const envelope = Math.exp(-((dist / reach) ** 2) * 0.55);
 					const hash = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
 					const grain = hash - Math.floor(hash);
 					const v = Math.max(
 						0,
 						Math.min(
 							1,
-							(0.2 + ring * 0.75) * envelope * (0.86 + grain * 0.28),
+							(0.18 + ring * 0.7) * envelope * (0.86 + grain * 0.28),
 						),
 					);
 
 					const glyph = GLYPHS[(v * (GLYPHS.length - 1)) | 0];
 					if (glyph === " " || glyph === ".") continue;
 
-					const alpha = 0.14 + v * 0.34;
+					const alpha = 0.06 + v * 0.18;
 					ctx.fillStyle = `rgba(163, 176, 196, ${alpha.toFixed(3)})`;
 					ctx.fillText(glyph, x * CELL + CELL / 2, y * CELL + CELL / 2);
 				}
